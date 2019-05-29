@@ -1,0 +1,123 @@
+---
+title: "Uncertainty in Tidal Elevation Mapping for the Contiguous U.S."
+author: "James R Holmquist"
+date: "May 29, 2019"
+output: pdf_document
+bibliography: bibliography.bib
+---
+
+# Abstract
+
+# Introduction
+
+Tidal wetlands have the capacity to maintain an adaptive resilience to sea-level rise. As sea-level increases, inundation stimulates plant growth and increases the availability of sediment which can be trapped and deposited [Morris2002responses; @Kirwan2013tidal; @Kirwan2016overestimation]. Coastal wetlands of all kinds accrete via these vegetative and inorganic soil fomration pathways. However, resilience to sea-level rise is not assured or infinite because biological productivity is limited theoretically by plants ability to fix carbon, and pracitcally by ecological and physical constraints [@Morris2016contributions]. Suspended sediment concentration can vary spatially because of watershed slope, erodiability, size and precipitation [@weston2014declining], and temporally because of storms and upstream damming. Local rates of relative sea-level rise, which take into account both euastatic and isostatic sea-level change can vary greatly. 
+
+The Contiguous United States (CONUS) exhibits a range of conditions.  
+*  Relative Sea-Level Rise    
+*  Tidal Range    
+*  Temperature    
+
+Increasing focuses on how we can use top-down and remotely sensed metrics to compare wetland vulneratibility accross diverse gradients.    
+*  Allocate resources and plan. Learn more about processes and make more informed predictions.    
+*  EPA and SOCCR-2    
+*  Examples of simple metrics include UVVR, MARS    
+*  Another because of accomodation space and UVVR we want to know tidal elevation relative to the tidal frame.    
+*  Zstar is a possible proxy for lateral transport, flood depth, and gets used in process models of vegetation response to sea-level rise    
+
+$$
+Z^*={{MHW-Z}\over{MHW-MSL}}
+$$
+
+In which $Z^*$ is dimensionless tidal elevation and $Z$ is orthometric elevation rererenced to north american vertical datum of 1988 (NAVD88). $MHW$ and $MSL$ are tidal datums, mean high water and mean sea level respecitvely. Some times this formula is applied using the mean higher high water (MHHW) datum in place of MHW.
+
+Airborne LiDAR data have the potential to generate high-resolution digital elevation models (DEMs) for mapping flood potential, and are an important part of coastal wetland monitoring (Chmura 2013). However, they are often built to accuracy specifications relevant to assessing potential property damages (Flood 2004; Coveney 2013); coastal wetland processes are sensitive to centimeter-scale gradients and usually covered by thick vegetation (Schmid, Hadley, and Wijekoon 2011) through which LiDAR can not fully penetrate to the ground. As a result, LiDAR can overestimate elevations as much as one meter (Chassereau, Bell, and Torres 2011). Field-based approaches such as real time kinematic (RTK)-GPS and total station surveys, transformed with the local tidal datum (Scott 2015), can provide the centimeter level accuracy necessary for tidal wetland C monitoring, yet conducting surveys at the density and coverage needed to generate a DEM can be logistically challenging and can impact sensitive habitats (Scott 2015). Algorithms for ‘bias-correcting’ LiDAR can be applied with a fraction of the survey points (Hladik, Schalles, and Alber 2013; Parrish, Rogers, and Calder 2014). The recently published Lidar Elevation Adjustment with NDVI (LEAN) algorithm uses a least squares algorithm to predict bias from high resolution vegetation indices and original LiDAR elevation (Buffington et al. 2016). LEAN has been demonstrated at several sites on the Pacific Coast, however, the broad application of LEAN is limited. 
+
+VDATUM is a useful tool, however extrapolated datums and errors do not extend into tidal wetlands. We propoegated uncertainty as in Holmquist et al. (2018). Combining the errors and 
+
+As far as we know, no one has gone to the trouble of propegating uncertainty for $Z^*$.
+
+The goals of this study:    
+  1. Provide a Z* file nationally that can be used for tidal wetland modeling process, quality, and resiliency assessments.    
+  2. Provide an accompanying propegated uncertainty assessment.   
+  3. Document geographic trends in propegated uncertainty.    
+  4. Doucment geographic trends in the dominant sources of uncertainty.   
+  5. Quantify value added of vegetation corrected LiDAR DEMs.   
+
+``` {r setup, include = F} 
+library(tidyverse)
+library(Deriv)
+
+```
+
+# Methods
+
+## Uncertainty Propegation
+
+To propegate uncertainty we applied the generalized form of an uncertainty propegation equation. 
+
+$$
+\sigma^2_{Z^*}= {({\delta{Z^*}\over{\delta{Z}}})^2}\sigma^2_{Z} + {({\delta{Z}^*\over{\delta{MHW}}})^2}\sigma^2_{mhw} + {({\delta{Z^*}\over{\delta{MSL}}})^2}\sigma^2_{msl} + 2{\delta{Z^*}\over{\delta{MHW}}}{{\delta{Z^*}\over{\delta{MSL}}}}{\sigma_{mhw}} {\sigma_{msl}} {\rho_{mhw,msl}} 
+$$
+
+In this equation $\sigma_{Z^*}$ is the propegated standard deviation of the dimensionless tidal elevation map. $\sigma_{Z}$, $\sigma_{mhw}$, and $\sigma_{msl}$ are the standard deviations of surface elevation, MHW and MSL respectively. Terms with the form $\delta\over{\delta{x}}$ are scalers quantifying how sensitive $Z^*$ is to variations in the input. $\delta{Z^*}\over{\delta{Z}}$, $\delta{Z^*}\over{\delta{MHW}}$ and $\delta{Z^*}\over{\delta{MSL}}$ are the partial derrivatives of elevation, MHW, and MSL respectively. The first three terms propegate uncertaint by multiplying a sensitivty (${\delta\over{\delta{x}}}^2$) by a variance ($\sigma^2$).
+
+The fourth term propegates uncertainty arising from covariance between terms. We assume that Z is statistically indpendent of MHW and MSL, and therefore we model no covariance between those terms. However MHW and MSL are measured and interpolated from the same tide gauges and we expect them to co-vary. $\rho_{mwh,msl}$ is the correlation coeficient between MHW and MSL.
+
+``` {r partial derrivatives, include = F} 
+
+zstar <- function(E,MHW,MSL) { (MHW-E)/(MHW-MSL) }
+
+dfdE <- Deriv(zstar, "E")
+print(dfdE)
+
+dfdMHW <- Deriv(zstar, "MHW", cache.exp = F)
+print(dfdMHW)
+
+dfdMSL <- Deriv(zstar, "MSL")
+print(dfdMSL)
+```
+
+We calculated partial derrivatives for the uncertainty propegation using the R package Deriv [@Clausen2018Deriv].
+
+$${\delta{Z^*}\over{\delta{Z}}}={-1\over{MHW-MSL}}$$
+
+$${\delta{Z^*}\over{\delta{MHW}}}={1-(MHW-Z)/(MHW-MSL) \over{MHW-MSL}}$$
+
+$${\delta{Z^*}\over{\delta{MSL}}}={MHW-Z\over{(MHW-MSL)^2}}$$
+
+Each $Z^*$ input contains at least two separate sources of uncertinaty. For Z we propegate total uncertainty from both the bias and random error associated with LiDAR-based DEMs. In our national scale analysis we bias correct using an point-weighted site-level average offset of # +/- s.d. m (n = # sites, # data points). We propegated uncertainty using the sum of squares of the bias s.d. and the point-weighted site-level average root mean square error (RMSE). This takes into account the fact that there is pixel-specific random error associated with each point, as well as uncertainty in vegetation interfearence that varies site to site, or region to region. In the second set of local scale analysis we use the same formula, but use bias and RMSE resulting from a 4 fold cross validation of LEAN-corrected LiDAR DEMs.
+
+$${\sigma^2_{Z}}=RMSE^2+Bias^2$$
+ 
+For each tidal datum, as in [@holmquist2018uncertainty], we propegate uncertainty from both the uncertainty in the datum itself, as well as uncertainty in the kriging process. 
+
+$${{\sigma^2_{msl|mhw}}=\sigma^2_{datum}+\sigma^2_{kriging}}$$
+
+## Data Sources
+
+### Water Levels
+
+``` {r correlation between MHW and MSL, include = FALSE} 
+
+datums <- read_csv("data/tide-gauges/original/AllTideGauges_w_UncertaintyNOAAdatums.csv")
+
+# convert datums to NAVD88
+datums_NAVD88 <- datums %>%
+  mutate(mhhw = mhhw - navd88,
+         mhw = mhw - navd88,
+         msl = msl-navd88) %>% 
+  select(Station_Name:datum_period, mhhw, mhw, msl) %>%
+  filter(complete.cases(mhhw, mhw, msl))
+
+head(datums)
+head(datums_NAVD88)
+
+n_gauges <- nrow(datums_NAVD88)
+
+ro_mhw_msl <- cor(datums_NAVD88$mhw, datums_NAVD88$msl)
+
+ro_mhh_msl <- cor(datums_NAVD88$mhhw, datums_NAVD88$msl)
+
+```
+
+We found `print(n_gauges)` NOAA tide gauges that were both listed in the NOAA Datum Errors report, and had complete MHHW, MHW, and MSL datums. We found that $\rho_{mhw,msl}$ and $\rho_{mhhww,msl}$ where `ro_mhw_msl` and `ro_mhh_msl` respectively. 

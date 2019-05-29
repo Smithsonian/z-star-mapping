@@ -1,0 +1,1 @@
+Copied over to GitHub from Holmquist working machine D:pMHHWS-code/Rcode/data on 29 May 2019. This file was created for the probobalistic MHHWS layer in the Environmental Research Letters 2018 paper. I'm going to reuse it to generate some other derrivative files.
