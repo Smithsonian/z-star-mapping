@@ -120,4 +120,4 @@ ro_mhh_msl <- cor(datums_NAVD88$mhhw, datums_NAVD88$msl)
 
 ```
 
-We found `print(n_gauges)` NOAA tide gauges that were both listed in the NOAA Datum Errors report, and had complete MHHW, MHW, and MSL datums. We found that $\rho_{mhw,msl}$ and $\rho_{mhhww,msl}$ where `ro_mhw_msl` and `ro_mhh_msl` respectively. 
+We found `r n_gauges` NOAA tide gauges that were both listed in the NOAA Datum Errors report, and had complete MHHW, MHW, and MSL datums. We found that $\rho_{mhw,msl}$ and $\rho_{mhhww,msl}$ were `r round(ro_mhw_msl,3)` and `r round(ro_mhh_msl, 3)` respectively. 
