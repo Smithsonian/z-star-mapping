@@ -19,7 +19,7 @@ A fundamental aspect of assessing wetland structure and vulnerability is its rel
 Elevation normalized to the tidal range ($Z^*$), is a functionally important variable used in models of marsh resiliency to sea-level rise. It has the advantages of being simple to calculate, making sites accross geographies more easily intercomparable. $Z^*$ is a function of orthometric elevation ($Z$) rererenced in our study to north american vertical datum of 1988 (NAVD88), as well as tidal datums Mean High Water ($MHW$) and Mean Sea Level ($MSL$). In some applications of this formula mean higher high water (MHHW) datum in place of MHW. 
 
 $$
-Z^*={{MHW-Z}\over{MHW-MSL}}
+Z^*={{Z-MSL}\over{MHW-MSL}}
 $$
 
 Since uncertainty propegation is a vital part of monitoring and decision support, we outline the major causes of uncertinaty in the mapped compenents making up $Z^*$. Airborne LiDAR data have the potential to generate high-resolution digital elevation models (DEMs) for mapping flood potential, and are an important part of coastal wetland monitoring [@Chmura2013what]. However, they are often built to accuracy specifications relevant to assessing potential property damages [@Flood2004ASPRS; @Coveney2013association]; coastal wetland processes are sensitive to centimeter-scale gradients and usually covered by thick vegetation [@Schmid2011vertical] through which LiDAR can not fully penetrate to the ground. As a result, LiDAR can overestimate elevations as much as one meter [@Chassereau2011comparison]. 
@@ -59,29 +59,30 @@ The final term propegates uncertainty arising from covariance between terms MHW 
 
 ``` {r partial derrivatives, include = F} 
 
-zstar <- function(E,MHW,MSL) { (MHW-E)/(MHW-MSL) }
+zstar <- function(Z,MHW,MSL) { (Z-MSL)/(MHW-MSL) }
 
-dfdE <- Deriv(zstar, "E")
-print(dfdE)
+dfdZ <- Deriv(zstar, "Z")
+print(dfdZ)
 
 dfdMHW <- Deriv(zstar, "MHW", cache.exp = F)
 print(dfdMHW)
 
-# https://www.symbolab.com/solver/algebra-calculator/%5Cfrac%7Bd%7D%7Bdx%7D%5Cleft(%5Cfrac%7B%5Cleft(x-E%5Cright)%7D%7B%5Cleft(x-z%5Cright)%7D%5Cright)%20
-dfdMHW.simplified <-function(E,MHW,MSL) { (E-MSL)/(MHW-MSL)^2 }
+# https://www.symbolab.com/solver/algebra-calculator/%5Cfrac%7Bd%7D%7Bdx%7D%5Cleft(%5Cfrac%7B%5Cleft(z-x%5Cright)%7D%7B%5Cleft(y-x%5Cright)%7D%5Cright)%20
 
 dfdMSL <- Deriv(zstar, "MSL")
+dfdMSL.simplified <-function(Z,MHW,MSL) { (Z-MHW)/(MHW-MSL)^2 }
+
 print(dfdMSL)
 
 ```
 
 We calculated partial derrivatives for the uncertainty propegation using the R package Deriv [@Clausen2018Deriv].
 
-$${\partial{Z^*}\over{\partial{Z}}}={-1\over{MHW-MSL}}$$
+$${\partial{Z^*}\over{\partial{Z}}}={1\over{MHW-MSL}}$$
 
-$${\partial{Z^*}\over{\partial{MHW}}}={Z-MSL\over{(MHW-MSL)^2}}$$
+$${\partial{Z^*}\over{\partial{MHW}}}=-{Z-MSL\over{(MHW-MSL)^2}}$$
 
-$${\partial{Z^*}\over{\partial{MSL}}}={MHW-Z\over{(MHW-MSL)^2}}$$
+$${\partial{Z^*}\over{\partial{MSL}}}={Z-MHW\over{(MHW-MSL)^2}}$$
 
 We accounted for both the bias and random error associated with LiDAR-based DEMs. In our national scale analysis we bias correct using a weighted site-level average offset of # +/- s.d. m (n = # sites, # data points). We propegated uncertainty from random error using the point-weighted site-level average root mean square error (RMSE).
 
