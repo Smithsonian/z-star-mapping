@@ -1,0 +1,21 @@
+Archive of ArcPro commands
+
+output_raster = arcpy.sa.RasterCalculator('SquareRoot(Square("datum_error_m_IDW_power3_300m_190531.img") + Square("MHHW_NAVD_se_of_prediction_300m_190531.img")) '); output_raster.save(r"D:\z-star-spatial-data\input-layers\datum-layers\MHHW_NAVD_propegated_uncertainty_300m_190603.img")
+
+output_raster = arcpy.sa.RasterCalculator('SquareRoot(Square("datum_error_m_IDW_power3_300m_190531.img") + Square("MHW_NAVD_300m_190531.img")) '); output_raster.save(r"D:\z-star-spatial-data\input-layers\datum-layers\MHW_NAVD_propegated_uncertainty_300m_190603.img")
+
+output_raster = arcpy.sa.RasterCalculator('SquareRoot(Square("datum_error_m_IDW_power3_300m_190531.img") + Square("MSL_NAVD_se_of_prediction_300m_190531.img")) '); output_raster.save(r"D:\z-star-spatial-data\input-layers\datum-layers\MSL_NAVD_propegated_uncertainty_300m_190603.img")
+
+arcpy.ga.IDW("NOAA_datums_NAVD88", "error_in_m", None, r"D:\z-star-spatial-data\input-layers\datum-layers\datum_error_m_IDW_power3_300m_190531.img", 300, 3, "NBRTYPE=Standard S_MAJOR=15.649911994222 S_MINOR=15.649911994222 ANGLE=0 NBR_MAX=15 NBR_MIN=10 SECTOR_TYPE=ONE_SECTOR", None)
+
+arcpy.ga.EmpiricalBayesianKriging("NOAA_datums_NAVD88", "mhhw", None, r"D:\z-star-spatial-data\input-layers\datum-layers\MHHW_NAVD_se_of_prediction_300m_190531.img", 300, "NONE", 100, 1, 100, "NBRTYPE=StandardCircular RADIUS=15 ANGLE=0 NBR_MAX=15 NBR_MIN=10 SECTOR_TYPE=ONE_SECTOR", "PREDICTION_STANDARD_ERROR", 0.5, "EXCEED", None, "POWER")
+
+arcpy.ga.EmpiricalBayesianKriging("NOAA_datums_NAVD88", "mhhw", None, r"D:\z-star-spatial-data\input-layers\datum-layers\MHHW_NAVD_300m_190531.img", 300, "NONE", 100, 1, 100, "NBRTYPE=StandardCircular RADIUS=15 ANGLE=0 NBR_MAX=15 NBR_MIN=10 SECTOR_TYPE=ONE_SECTOR", "PREDICTION", 0.5, "EXCEED", None, "POWER")
+
+arcpy.ga.EmpiricalBayesianKriging("NOAA_datums_NAVD88", "mhw", None, r"D:\z-star-spatial-data\input-layers\datum-layers\MHW_NAVD_se_of_prediction_300m_190531.img", 300, "NONE", 100, 1, 100, "NBRTYPE=StandardCircular RADIUS=15 ANGLE=0 NBR_MAX=15 NBR_MIN=10 SECTOR_TYPE=ONE_SECTOR", "PREDICTION_STANDARD_ERROR", 0.5, "EXCEED", None, "POWER")
+
+arcpy.ga.EmpiricalBayesianKriging("NOAA_datums_NAVD88", "mhw", None, r"D:\z-star-spatial-data\input-layers\datum-layers\MHW_NAVD_300m_190531.img", 300, "NONE", 100, 1, 100, "NBRTYPE=StandardCircular RADIUS=15 ANGLE=0 NBR_MAX=15 NBR_MIN=10 SECTOR_TYPE=ONE_SECTOR", "PREDICTION", 0.5, "EXCEED", None, "POWER")
+
+arcpy.ga.EmpiricalBayesianKriging("NOAA_datums_NAVD88", "msl", None, r"D:\z-star-spatial-data\input-layers\datum-layers\MSL_NAVD_se_of_prediction_300m_190531.img", 300, "NONE", 100, 1, 100, "NBRTYPE=StandardCircular RADIUS=15 ANGLE=0 NBR_MAX=15 NBR_MIN=10 SECTOR_TYPE=ONE_SECTOR", "PREDICTION_STANDARD_ERROR", 0.5, "EXCEED", None, "POWER")
+
+arcpy.ga.EmpiricalBayesianKriging("NOAA_datums_NAVD88", "msl", None, r"D:\z-star-spatial-data\input-layers\datum-layers\MSL_NAVD_300m_190531.img", 300, "NONE", 100, 1, 100, "NBRTYPE=StandardCircular RADIUS=15 ANGLE=0 NBR_MAX=15 NBR_MIN=10 SECTOR_TYPE=ONE_SECTOR", "PREDICTION", 0.5, "EXCEED", None, "POWER")

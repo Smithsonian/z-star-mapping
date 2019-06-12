@@ -72,7 +72,7 @@ inputRasters = ["D:/LIDAR DEMs/NOAA_OCM_SLR_Inundation_DEMs/CA/CA_ChannelIslands
                 "D:/LIDAR DEMs/SJ_Delta/dem_bay_delta_10m_v3_20121109_2/dem_bay_delta_10m_2JH.tif",
                 "D:/LIDAR DEMs/SJ_Delta/dem_bay_delta_10m_v3_20121109_4/dem_bay_delta_10m_4JH.tif",
                 "D:/LIDAR DEMs/MD_state/MD_highres/Harford_DEM_2013_1.5m/harford_5ft",
-                "D:/LIDAR DEMs/MD_state/MD_highres/Baltimore_DEM_2015_2.5ft/baltimore2015_m.tif",
+                "D:/LIDAR DEMs/MD_state/MD_highres/Baltimore_DEM_2015_2.5ft/baltimore2015.tif",
                 "D:/LIDAR DEMs/MD_state/MD_highres/Calvert_DEM_2011_2m/calvert_2m",
                 "D:/LIDAR DEMs/NOAA_OCM_SLR_Inundation_DEMs/WA/WA_SEW_dems/WA_SEW1_GCS_5m_NAVD88m.img",
                 "D:/LIDAR DEMs/NOAA_OCM_SLR_Inundation_DEMs/WA/WA_SEW_dems/WA_SEW2_GCS_5m_NAVD88m.img",
@@ -90,7 +90,7 @@ def zStarWithUncertainty(zLayer,
                          naValue = -9999,
                          outputPath = "D:/z-star-spatial-data/derivative-maps/national-scale",
                          wetlandLayer = "D:/z-star-spatial-data/input-layers/CCAPallWetlands2010.tif",
-                         maskLayer = "D:/z-star-spatial-data/input-layers/zStarAoiMask_190610.tif",
+                         maskLayer = "D:/z-star-spatial-data/input-layers/zStarAoiMask2_190612.tif",
                          filetag = "",
                          mapPartialDerivatives = False
                          ):
@@ -225,7 +225,7 @@ def zStarWithUncertainty(zLayer,
     del(zErrorGtDatum)
     print("    Categorical uncertainty raster deleted.")
 
-
+#zStarWithUncertainty(inputRasters[0],  filetag="_MHW")
 #zStarWithUncertainty(inputRasters[8],  filetag="_MHW", mapPartialDerivatives=True)
 #zStarWithUncertainty(inputRasters[1],  filetag="_MHW")
 #zStarWithUncertainty(inputRasters[2],  filetag="_MHW")
@@ -234,3 +234,8 @@ def zStarWithUncertainty(zLayer,
 #zStarWithUncertainty(inputRasters[5],  filetag="_MHW")
 #zStarWithUncertainty(inputRasters[6],  filetag="_MHW")
 #zStarWithUncertainty(inputRasters[7],  filetag="_MHW")
+#zStarWithUncertainty(inputRasters[9],  filetag="_MHW", hydroFlatteningValue=0, mapPartialDerivatives=True)
+#zStarWithUncertainty(inputRasters[10],  filetag="_MHW", hydroFlatteningValue=0)
+#zStarWithUncertainty(inputRasters[11],  filetag="_MHW", hydroFlatteningValue=0)
+#zStarWithUncertainty(inputRasters[12],  filetag="_MHW", hydroFlatteningValue=0)
+#zStarWithUncertainty(inputRasters[13],  filetag="_MHW", hydroFlatteningValue=-0.304801)
