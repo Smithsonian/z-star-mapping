@@ -10,7 +10,7 @@ bibliography: bibliography.bib
 
 # Introduction
 
-Tidal wetlands have the capacity to maintain an adaptive resilience to sea-level rise. As sea-level increases, inundation stimulates plant growth and increases the availability of sediment which can be trapped and deposited [@Morris2002responses; @Kirwan2013tidal; @Kirwan2016overestimation]. Coastal wetlands of all kinds accrete via these vegetative and inorganic soil fomration pathways. However, resilience to sea-level rise is not assured or infinite because biological productivity is limited theoretically by plants ability to fix carbon, and pracitcally by ecological and physical constraints [@Morris2016contributions]. Suspended sediment concentration can vary spatially because of watershed slope, erodiability, size and precipitation [@weston2014declining], and temporally because of storms and upstream damming. Local rates of relative sea-level rise, which take into account both euastatic and isostatic sea-level change can vary greatly. 
+Tidal wetlands have the capacity to maintain an adaptive resilience to sea-level rise. As sea-level increases, inundation stimulates plant growth and increases the availability of sediment which can be trapped and deposited [@Morris2002responses; @Kirwan2013tidal; @Kirwan2016overestimation]. Coastal wetlands of all kinds accrete via these vegetative and inorganic soil fomration pathways. However, resilience to sea-level rise is not assured or infinite because biological productivity is limited theoretically by plants ability to fix carbon, and pracitcally by ecological and physical constraints [@Morris2016contributions]. Suspended sediment concentration can vary spatially because of watershed slope, erodiability, size and precipitation [@weston2014declining], and temporally because of storms and upstream damming. Local rates of relative sea-level rise, which take into account both euastatic and isostatic sea-level change can vary greatly.
 
 The Contiguous United States (CONUS) exhibits a range of conditions accross its three coasts with tidal range generally increasing from south to north, and being more muted in bays than in open water. Relative sea-level rise follows a similar pattern but generally decreasing from south to north. Many studies have focused on drivers and processes controlling resiliency on local scales and regional scales. However there is a need for simple top-down metrics that can be used as resilincy proxies to aid in national-scale planning.  
 
@@ -19,7 +19,7 @@ A fundamental aspect of assessing wetland structure and vulnerability is its rel
 Elevation normalized to the tidal range ($Z^*$), is a functionally important variable used in models of marsh resiliency to sea-level rise. It has the advantages of being simple to calculate, making sites accross geographies more easily intercomparable. $Z^*$ is a function of orthometric elevation ($Z$) rererenced in our study to north american vertical datum of 1988 (NAVD88), as well as tidal datums Mean High Water ($MHW$) and Mean Sea Level ($MSL$). In some applications of this formula mean higher high water (MHHW) datum in place of MHW. 
 
 $$
-Z^*={{MHW-Z}\over{MHW-MSL}}
+Z^*={{Z-MSL}\over{MHW-MSL}}
 $$
 
 Since uncertainty propegation is a vital part of monitoring and decision support, we outline the major causes of uncertinaty in the mapped compenents making up $Z^*$. Airborne LiDAR data have the potential to generate high-resolution digital elevation models (DEMs) for mapping flood potential, and are an important part of coastal wetland monitoring [@Chmura2013what]. However, they are often built to accuracy specifications relevant to assessing potential property damages [@Flood2004ASPRS; @Coveney2013association]; coastal wetland processes are sensitive to centimeter-scale gradients and usually covered by thick vegetation [@Schmid2011vertical] through which LiDAR can not fully penetrate to the ground. As a result, LiDAR can overestimate elevations as much as one meter [@Chassereau2011comparison]. 
@@ -59,35 +59,34 @@ The final term propegates uncertainty arising from covariance between terms MHW 
 
 ``` {r partial derrivatives, include = F} 
 
-zstar <- function(E,MHW,MSL) { (MHW-E)/(MHW-MSL) }
+zstar <- function(Z,MHW,MSL) { (Z-MSL)/(MHW-MSL) }
 
-dfdE <- Deriv(zstar, "E")
-print(dfdE)
+dfdZ <- Deriv(zstar, "Z")
+print(dfdZ)
 
 dfdMHW <- Deriv(zstar, "MHW", cache.exp = F)
 print(dfdMHW)
 
-# https://www.symbolab.com/solver/algebra-calculator/%5Cfrac%7Bd%7D%7Bdx%7D%5Cleft(%5Cfrac%7B%5Cleft(x-E%5Cright)%7D%7B%5Cleft(x-z%5Cright)%7D%5Cright)%20
-dfdMHW.simplified <-function(E,MHW,MSL) { (E-MSL)/(MHW-MSL)^2 }
+# https://www.symbolab.com/solver/algebra-calculator/%5Cfrac%7Bd%7D%7Bdx%7D%5Cleft(%5Cfrac%7B%5Cleft(z-x%5Cright)%7D%7B%5Cleft(y-x%5Cright)%7D%5Cright)%20
 
 dfdMSL <- Deriv(zstar, "MSL")
+dfdMSL.simplified <-function(Z,MHW,MSL) { (Z-MHW)/(MHW-MSL)^2 }
+
 print(dfdMSL)
 
 ```
 
 We calculated partial derrivatives for the uncertainty propegation using the R package Deriv [@Clausen2018Deriv].
 
-$${\partial{Z^*}\over{\partial{Z}}}={-1\over{MHW-MSL}}$$
+$${\partial{Z^*}\over{\partial{Z}}}={1\over{MHW-MSL}}$$
 
-$${\partial{Z^*}\over{\partial{MHW}}}={Z-MSL\over{(MHW-MSL)^2}}$$
+$${\partial{Z^*}\over{\partial{MHW}}}=-{Z-MSL\over{(MHW-MSL)^2}}$$
 
-$${\partial{Z^*}\over{\partial{MSL}}}={MHW-Z\over{(MHW-MSL)^2}}$$
+$${\partial{Z^*}\over{\partial{MSL}}}={Z-MHW\over{(MHW-MSL)^2}}$$
 
 We accounted for both the bias and random error associated with LiDAR-based DEMs. In our national scale analysis we bias correct using a weighted site-level average offset of # +/- s.d. m (n = # sites, # data points). We propegated uncertainty from random error using the point-weighted site-level average root mean square error (RMSE).
 
 $${\sigma^2_{Z}}=\sigma^2_{random}+\sigma^2_{bias}$$
- 
-In the first set of national scale products, we assume resdiual bias is 0. For the second set of national analyses, in which we quantify value added of LEAN bias correction, we additionally propegate uncertainty in bias that varies site-to-site. For the LEAN-corrected LiDAR DEMs, we propegate random error using a four-fold cross validation, and assume uncertainty in bias is zero.
  
 For each tidal datum, as in [@holmquist2018uncertainty], we propegate uncertainty from both the uncertainty in the datum itself, as well as uncertainty in the kriging process. 
 
@@ -126,17 +125,11 @@ We found `r n_gauges` NOAA tide gauges that were both listed in the NOAA Datum E
 
 ### Spatial Products Used
 
-We created the $Z^*$ map in ArcGIS Pro (software version).  
+We created the $Z^*$ and derrivative maps in ArcGIS Pro (2.0.1). In constructing our area of interest we created as incluseive as an area of interest as possible. We included all estuarine wetlands according to the Coastal Change Analysis Program (C-CAP). For palustrine wetlands, also known as freshwater wetlands, we inluded them in the analysis if they fell below a 1% probablity of being below the high tide line according to a probobalistic Mean Higher High Spring (MHHWS) tide layer. In anticipation of users wanting to compare the relative tidal elevations of wetlands to adjacent surfaces that may represent drained dredged or developed former wetlands, we included farmed, developed, bare, and natural lands falling below the 1% probobility below MHHWS inclusion critera applied to freshwater wetlands, but we excluded submerged vegetation, sandy beaches and open water. In order to make this as much of a basemap inclusive of coastal wetlands for a wide variety of users, we additionally included any areas mapped as tidal wetlands according to the National Wetlands Inventory (Holmquist et al. 2018). The base-layer was generated at 30x30 m pixel scale matching the projection and layout of C-CAP.
 
-Base-Layer
-*  C-CAP Estuarine Wetlands
-*  Palustrine wetlands. Upper cutoff 99.9% probablity of being a tidal wetland.
+For the underlying elevation sources we compiled coastal LiDAR-based digital elevation models from multiple sources, with the goal of geographic completness and the most up-to-date surveys. The majority of the files were aggregated for the NOAA Sea Level Rise viewer. The underlying aggregated DEMs for the sea-level rise viewer however are not representative of all the data used for the sea-level rise viewer, or the extent of historically tidal wetlands. We additionally aggregated DEMs from the Northern Gulf of Mexico; the Sacramento Delta in CA; Baltimore, and Calvert Counties in Maryland; Beaufort, and Glynn Counties in South Carolina; Georgia ; Mobile Alabama; and the North Western Outer Coast of Washington State. 
 
-LiDAR DEM sources
-*  NOAA Sea Level Rise Viewer
-*  NGOM
-*  SacDelta
-*  MD - extra
+We made key updates to the probobalistic MHHWS layer presented by Holmquist et al (2018) based on the new underlying data sources.
 
 Krigged Water Levels and Errors
 *  MSL
@@ -145,7 +138,7 @@ Krigged Water Levels and Errors
 
 Mapped Z*
 
-Created partial derrivative maps, partial uncertainty maps, propegated uncertianty maps. 
+Created partial uncertainty maps, propegated uncertianty maps. 
 
 Created categorical map, leading source of uncertainty 
 
