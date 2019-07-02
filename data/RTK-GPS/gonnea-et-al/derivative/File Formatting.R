@@ -4,7 +4,7 @@ library(readxl)
 library(dplyr)
 library(sp)
 
-devtools::install_github("dkahle/ggmap") # As of time of writing, this is a package that receives frequent 
+#devtools::install_github("dkahle/ggmap") # As of time of writing, this is a package that receives frequent 
 library(ggmap)
 library(rgdal)
 
@@ -84,29 +84,29 @@ convert_UTM_to_latlong <- function(easting, northing, zone) {
 
 # Read in three excel files
 sandyNeck <- read_xlsx("data/RTK-GPS/gonnea-et-al/original/AllSandyNeckPoints_RTK2018.xlsx",
-                       sheet = 1)
+                       sheet = 2)
 sageLot <- read_xlsx("data/RTK-GPS/gonnea-et-al/original/Sage Lot Pond 2017_2018 RTK Surveys.xlsx",
                      sheet = 1)
 restoredMarsh <- read_xlsx("data/RTK-GPS/gonnea-et-al/original/RestoredMarshRTK.xlsx",
-                           sheet = 1)
-
-head(sandyNeck)
-head(sageLot)
+                           sheet = 2)
 head(restoredMarsh)
 
 restoredMarshEdited <- restoredMarsh %>%
   rename(latitude_dd = lat,
          longitude_dd = long,
          elevation = elev,
-         site = loc,
-         point_id = id
+         site_id = loc,
+         point_id = id,
+         transect_id = X__1
          ) %>%
-  select(site, point_id, latitude_dd, longitude_dd, elevation)
+  select(site_id, point_id, latitude_dd, longitude_dd, elevation)
 
 restoredMarshEdited$latitude_dd <- as.numeric(restoredMarshEdited$latitude_dd)
 
+head(sageLot)
+
 sageLotEdited <- sageLot %>%
-  mutate(site = "Sage Lot") %>%
+  mutate(site_id = "Sage Lot") %>%
   rename(elevation = altitude_m)
 
 sageLotEdited$point_id <- as.character(1:nrow(sageLotEdited))
@@ -117,15 +117,21 @@ sageLotLatLongs <- convert_UTM_to_latlong(northing = sageLotEdited$northing_m,
 sageLotEdited["latitude_dd"] <- sageLotLatLongs$core_latitude
 sageLotEdited["longitude_dd"] <- sageLotLatLongs$core_longitude
 
-sageLotEdited <- sageLotEdited %>% 
-  select(site, point_id, latitude_dd, longitude_dd, elevation)
+sageLotEdited <- sageLotEdited %>%
+  mutate(point_id = ifelse(nchar(as.character(point_id)) == 1, paste("SageLot-00", point_id, sep=""),
+                                 ifelse(nchar(as.character(point_id)) == 2, paste("SageLot-0", point_id, sep=""), 
+                           paste("SageLot-", point_id, sep="")))) %>%
+  select(site_id, point_id, latitude_dd, longitude_dd, elevation)
+
+
+head(sandyNeck)
 
 sandyNeckEdited <- sandyNeck %>%
   rename(easting_m = Easting,
          northing_m = Northing,
          elevation = Elev_NAVD88
          ) %>%
-  mutate(site = "sandy neck",
+  mutate(site_id = "sandy neck",
          point_id = paste(Descriptor, Point, sep="-"))
   
 sandyNeckLotLatLongs <- convert_UTM_to_latlong(northing = sandyNeckEdited$northing_m,
@@ -136,17 +142,18 @@ sandyNeckEdited["latitude_dd"] <- sandyNeckLotLatLongs$core_latitude
 sandyNeckEdited["longitude_dd"] <- sandyNeckLotLatLongs$core_longitude
 
 sandyNeckEdited <- sandyNeckEdited %>% 
-  select(site, point_id, latitude_dd, longitude_dd, elevation)
+  select(site_id, point_id, latitude_dd, longitude_dd, elevation)
 
 sitesRtkCompiled <- bind_rows(sandyNeckEdited, sageLotEdited) %>%
   bind_rows(restoredMarshEdited) %>%
-  mutate(site = ifelse(site == "sage lot", "Sage Lot", site),
-         site = ifelse(site == "SGF", "State Game Farm", site),
-         site = ifelse(site == "state game farm", "State Game Farm", site),
-         site = ifelse(site == "quivet", "Quivet", site),
-         site = ifelse(site == "Scusset", "Scussett", site),
-         site = ifelse(site == "bass", "Bass", site)
-         )
+  mutate(site_id = ifelse(site_id == "SGF", "State Game Farm", site_id),
+         site_id = ifelse(site_id == "Scusset", "Scussett", site_id)
+         ) %>%
+  mutate(site_id = toupper(site_id)) %>%
+  filter(complete.cases(.))
+
+write_csv(sitesRtkCompiled, "data/RTK-GPS/gonnea-et-al/derivative/GonneaEtAlRtkGps_190702.csv")
+
 
 MAP_map <- get_stamenmap(bbox = c(left = min(sitesRtkCompiled$longitude_dd, na.rm = T)-0.1,
                                   bottom = min(sitesRtkCompiled$latitude_dd, na.rm = T)-0.1, 
@@ -161,7 +168,7 @@ ggmap(MAP_map,
   geom_point(data = sitesRtkCompiled, aes(x = longitude_dd,
                                           y = latitude_dd,
                                           color = elevation,
-                                          shape = site,
+                                          shape = site_id,
                                           size = elevation)) +
   xlab("Longitude") + # Change x axis title
   ylab("Latitude") + # Change y axis title
@@ -170,5 +177,5 @@ ggmap(MAP_map,
 
 ggplot(data = sitesRtkCompiled, aes(x = elevation)) +
   geom_histogram() +
-  geom_rug(aes(color = site), alpha=0.9) +
+  geom_rug(aes(color = site_id), alpha=0.9) +
   scale_color_brewer(palette = "Paired")
