@@ -96,8 +96,7 @@ restoredMarshEdited <- restoredMarsh %>%
          longitude_dd = long,
          elevation = elev,
          site_id = loc,
-         point_id = id,
-         transect_id = X__1
+         point_id = id
          ) %>%
   select(site_id, point_id, latitude_dd, longitude_dd, elevation)
 
