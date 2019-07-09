@@ -2,7 +2,7 @@
 title: "A CONUS-scale map of relative tidal marsh elevation: an essential variable for coastal wetland sustainability"
 author: "James R Holmquist and Lisamarie Windham-Myers"
 date: "May 29, 2019"
-output: pdf_document
+output: html_document
 bibliography: bibliography.bib
 ---
 
@@ -45,7 +45,7 @@ library(Deriv)
 
 # Methods
 
-## Uncertainty Propegation
+## Z* Uncertainty Propegation
 
 The formula for $Z^*$ is too complex for simple additive or multiplicative propegation of uncertainty based on the sum of squares, but it is not so complicated that uncertainty propegation cannot be solved analytically. We applied the generalized form of an uncertainty propegation equation to the formula for $Z^*$, resulting in Eq. 2.
 
@@ -92,7 +92,60 @@ For each tidal datum, as in [@holmquist2018uncertainty], we propegate uncertaint
 
 $${{\sigma^2_{msl|mhw}}=\sigma^2_{datum}+\sigma^2_{kriging}}$$
 
+
+## National Scale Mapping
+
+### Data Sources USed
+
+For the analyses we compiled coastal LiDAR-based digital elevation models from multiple sources, with the goal of geographic completness and the most up-to-date surveys. The majority of the files were aggregated for the NOAA Sea Level Rise viewer. The underlying aggregated DEMs for the sea-level rise viewer however are not representative of all the data used for the sea-level rise viewer, or the extent of historically tidal wetlands. We additionally aggregated DEMs from the Northern Gulf of Mexico; the Sacramento Delta in CA; Baltimore, and Calvert Counties in Maryland; Beaufort, and Glynn Counties in South Carolina; Georgia; Mobile County, Alabama; and the Northwestern Outer Coast of Washington State. We created all maps in ArcGIS Pro (2.0.1). 
+
+### Area of Interest
+
+In constructing our area of interest we created as incluseive as an area of interest as possible. We included all estuarine wetlands according to the Coastal Change Analysis Program (C-CAP). For palustrine wetlands, also known as freshwater wetlands, we inluded them in the analysis if they fell below a 1% probablity of being below the high tide line according to a probobalistic Mean Higher High Spring (MHHWS) tide layer. In anticipation of users wanting to compare the relative tidal elevations of wetlands to adjacent surfaces that may represent drained dredged or developed former wetlands, we included farmed, developed, bare, and natural lands falling below the 1% probobility below MHHWS inclusion critera applied to freshwater wetlands, but we excluded submerged vegetation, sandy beaches and open water. In order to make this as much of a basemap inclusive of coastal wetlands for a wide variety of users, we additionally included any areas mapped as tidal wetlands according to the National Wetlands Inventory (Holmquist et al. 2018). The base-layer was generated at 30x30 m pixel scale matching the projection and layout of C-CAP.
+
+### Probobalistic MHHWS Version 2
+
+When creating the area of interest, We made key updates to the probobalistic MHHWS layer presented by Holmquist et al (2018) based on the new underlying data sources, and our revisions to the original methology discussed therein (Tab. 1).
+
+$$ \sigma^2_{mhhws} = \sigma^2_{mhhws} + \sigma^2_{mhhw} + 2\rho\sigma_{mhhws}\sigma_{mhhw}  $$
+
+``` {r table 1, echo = F, results = 'asis'} 
+library(knitr)
+summaryChanges <- read_csv("tables/Summary Changes Table pMHHWS 2018 to Z star 2019.csv")
+
+kable(summaryChanges, caption = "Summary of changes made between Holmquist 2018 workflow and our reanalysis for probability < MHHWS, and Z* propegated uncertainty.")
+
+```
+
+Krigged Water Levels and Errors
+*  MSL
+*  MHW
+*  MHHW
+
+
 ## Data Sources
+
+Mapped Z*
+
+Created partial uncertainty maps, propegated uncertianty maps. 
+
+Created categorical map, leading source of uncertainty 
+
+### LEAN-corrected DEMs
+
+Locations
+*  PS
+*  SF
+*  LA
+*  CB
+*  CC
+
+Cross fold validations
+
+Same thing as before, created partial derrivative maps, partial uncertainty maps, propegated uncertianty maps. 
+
+
+## Results
 
 ### Water Levels
 
@@ -119,43 +172,24 @@ ro_mhw_msl <- cor(datums_NAVD88$mhw, datums_NAVD88$msl)
 
 ro_mhh_msl <- cor(datums_NAVD88$mhhw, datums_NAVD88$msl)
 
+# calculate correlation between MHHWS offset and MHHW to NAVD88
+# since these are needed for covariance in the propegated uncertainty analysis for pMHHWS redo
+
+mhhws <- as.tibble(foreign::read.dbf("data/tide-gauges/original/Holmquist2018_MHHWS_offsets.dbf", as.is=T))
+
+mhhwAndMhhws <- datums_NAVD88 %>%
+  left_join(mhhws, by = "STATION_ID") %>%
+  select(Station_Name, STATION_ID, mhhw, mhhws_offs) %>%
+  filter(complete.cases(.))
+
+n_mhhwAndMhhws <- nrow(mhhwAndMhhws)
+
+ro_mhhw_mhhwsOffset <- cor(mhhwAndMhhws$mhhw, mhhwAndMhhws$mhhws_offs)
+
 ```
 
-We found `r n_gauges` NOAA tide gauges that were both listed in the NOAA Datum Errors report, and had complete MHHW, MHW, and MSL datums. We found that $\rho_{mhw,msl}$ and $\rho_{mhhww,msl}$ were `r round(ro_mhw_msl,3)` and `r round(ro_mhh_msl, 3)` respectively. 
 
-### Spatial Products Used
-
-We created the $Z^*$ and derrivative maps in ArcGIS Pro (2.0.1). In constructing our area of interest we created as incluseive as an area of interest as possible. We included all estuarine wetlands according to the Coastal Change Analysis Program (C-CAP). For palustrine wetlands, also known as freshwater wetlands, we inluded them in the analysis if they fell below a 1% probablity of being below the high tide line according to a probobalistic Mean Higher High Spring (MHHWS) tide layer. In anticipation of users wanting to compare the relative tidal elevations of wetlands to adjacent surfaces that may represent drained dredged or developed former wetlands, we included farmed, developed, bare, and natural lands falling below the 1% probobility below MHHWS inclusion critera applied to freshwater wetlands, but we excluded submerged vegetation, sandy beaches and open water. In order to make this as much of a basemap inclusive of coastal wetlands for a wide variety of users, we additionally included any areas mapped as tidal wetlands according to the National Wetlands Inventory (Holmquist et al. 2018). The base-layer was generated at 30x30 m pixel scale matching the projection and layout of C-CAP.
-
-For the underlying elevation sources we compiled coastal LiDAR-based digital elevation models from multiple sources, with the goal of geographic completness and the most up-to-date surveys. The majority of the files were aggregated for the NOAA Sea Level Rise viewer. The underlying aggregated DEMs for the sea-level rise viewer however are not representative of all the data used for the sea-level rise viewer, or the extent of historically tidal wetlands. We additionally aggregated DEMs from the Northern Gulf of Mexico; the Sacramento Delta in CA; Baltimore, and Calvert Counties in Maryland; Beaufort, and Glynn Counties in South Carolina; Georgia ; Mobile Alabama; and the North Western Outer Coast of Washington State. 
-
-We made key updates to the probobalistic MHHWS layer presented by Holmquist et al (2018) based on the new underlying data sources.
-
-Krigged Water Levels and Errors
-*  MSL
-*  MHW
-*  MHHW
-
-Mapped Z*
-
-Created partial uncertainty maps, propegated uncertianty maps. 
-
-Created categorical map, leading source of uncertainty 
-
-### LEAN-corrected DEMs
-
-Locations
-*  PS
-*  SF
-*  LA
-*  CB
-*  CC
-
-LiDAR and Imagrey Used
-
-Cross fold validations
-
-Same thing as before, created partial derrivative maps, partial uncertainty maps, propegated uncertianty maps. 
+We found `r n_gauges` NOAA tide gauges that were both listed in the NOAA Datum Errors report, and had complete MHHW, MHW, and MSL datums. We found that $\rho_{mhw,msl}$ and $\rho_{mhhww,msl}$ were `r round(ro_mhw_msl,3)` and `r round(ro_mhh_msl, 3)` respectively.
 
 # Results and Discussion
 
