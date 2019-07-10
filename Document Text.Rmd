@@ -34,7 +34,7 @@ While elevation data layers are often considered too coarse to use in coastal se
 
 ## Objectives
 
-In this paper we present a relative elevation map for CONUS tidal wetlands, generated through a transparent process, and accompanyed by a corresponding uncertainty map at 30 x 30 m scale. We quantify the value added of vegetation correction at a local-scale by performing vegetation correction using RTK-GPS at a small network of sites. We illustrate the sensitivity of a coastal wetland resiliency model to LiDAR bias using the Global Change Research Wetland (GCReW) as a case study.
+In this paper we present a relative elevation map for CONUS tidal wetlands, generated through a transparent process, and accompanyed by a corresponding uncertainty map at 30 x 30 m scale. We quantify the value added of vegetation correction at a local-scale by performing vegetation correction using RTK-GPS at a small network of sites.
 
 ``` {r setup, include = F} 
 library(tidyverse)
@@ -95,9 +95,9 @@ $${{\sigma^2_{msl|mhw}}=\sigma^2_{datum}+\sigma^2_{kriging}}$$
 
 ## National Scale Mapping
 
-### Data Sources USed
+### Digital Elevation Models Used
 
-For the analyses we compiled coastal LiDAR-based digital elevation models from multiple sources, with the goal of geographic completness and the most up-to-date surveys. The majority of the files were aggregated for the NOAA Sea Level Rise viewer. The underlying aggregated DEMs for the sea-level rise viewer however are not representative of all the data used for the sea-level rise viewer, or the extent of historically tidal wetlands. We additionally aggregated DEMs from the Northern Gulf of Mexico; the Sacramento Delta in CA; Baltimore, and Calvert Counties in Maryland; Beaufort, and Glynn Counties in South Carolina; Georgia; Mobile County, Alabama; and the Northwestern Outer Coast of Washington State. We created all maps in ArcGIS Pro (2.0.1). 
+For the analyses we compiled coastal LiDAR-based digital elevation models from multiple sources, with the goal of geographic completness and the most up-to-date surveys. The majority of the files were aggregated for the NOAA Sea Level Rise viewer. The underlying aggregated DEMs for the sea-level rise viewer however are not representative of all the data used for the sea-level rise viewer, or the extent of historically tidal wetlands. We additionally aggregated DEMs from the Northern Gulf of Mexico; the Sacramento Delta in CA; Baltimore, and Calvert Counties in Maryland; Beaufort, and Georgetown Counties in South Carolina; Liberty and Glynn Counties, Georgia; and Mobile County, Alabama. We created all maps in ArcGIS Pro (2.0.1).
 
 ### Area of Interest
 
@@ -116,38 +116,6 @@ summaryChanges <- read_csv("tables/Summary Changes Table pMHHWS 2018 to Z star 2
 kable(summaryChanges, caption = "Summary of changes made between Holmquist 2018 workflow and our reanalysis for probability < MHHWS, and Z* propegated uncertainty.")
 
 ```
-
-Krigged Water Levels and Errors
-*  MSL
-*  MHW
-*  MHHW
-
-
-## Data Sources
-
-Mapped Z*
-
-Created partial uncertainty maps, propegated uncertianty maps. 
-
-Created categorical map, leading source of uncertainty 
-
-### LEAN-corrected DEMs
-
-Locations
-*  PS
-*  SF
-*  LA
-*  CB
-*  CC
-
-Cross fold validations
-
-Same thing as before, created partial derrivative maps, partial uncertainty maps, propegated uncertianty maps. 
-
-
-## Results
-
-### Water Levels
 
 ``` {r correlation between MHW and MSL, include = FALSE} 
 
@@ -190,6 +158,32 @@ ro_mhhw_mhhwsOffset <- cor(mhhwAndMhhws$mhhw, mhhwAndMhhws$mhhws_offs)
 
 
 We found `r n_gauges` NOAA tide gauges that were both listed in the NOAA Datum Errors report, and had complete MHHW, MHW, and MSL datums. We found that $\rho_{mhw,msl}$ and $\rho_{mhhww,msl}$ were `r round(ro_mhw_msl,3)` and `r round(ro_mhh_msl, 3)` respectively.
+
+Krigged Water Levels and Errors
+*  MSL
+*  MHW
+*  MHHW
+
+## Z Star Mapping
+
+Mapped Z*
+
+Created partial uncertainty maps, propegated uncertianty maps. 
+
+Created categorical map, leading source of uncertainty 
+
+## LEAN-corrected DEMs
+
+Locations
+*  PS
+*  SF
+*  LA
+*  CB
+*  CC
+
+Cross fold validations
+
+Same thing as before, created partial derrivative maps, partial uncertainty maps, propegated uncertianty maps. 
 
 # Results and Discussion
 
