@@ -1,0 +1,3 @@
+This is a python file as written on James Holmquist's desktop at Smithsonian Environmental Research Center in Fall 2017. The program takes three inputs (all 3 dimensional geographic data layers): 1. a digital elevation model in NAVD88 2. the elevation of mean higher high water spring tides relative to NAVD88, and 3. propegated uncertainty of that transformation.
+
+This file references propegated uncertainy and water level data listed in the 'raster' section, and the DEMs downloaded as listed in the 'table' section. 
