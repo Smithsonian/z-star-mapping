@@ -18,6 +18,7 @@ from multiprocessing import Process, Queue, Pool, cpu_count, current_process, Ma
 arcpy.env.overwriteOutput = True
 arcpy.CheckOutExtension("Spatial")
 from arcpy.sa import *
+import numpy as np
 
 deleteHighRes = True
 
@@ -31,17 +32,17 @@ out_fishnet_path = "D:/temp/ArcScratch/fishnets/tempFishnet.shp"
 out_raster_folder = "D:/z-star-spatial-data/derivative-maps/pMHHWS_V2p0/"
 
 # change this
-in_raster_path = "D:/LIDAR DEMs/NOAA_OCM_SLR_Inundation_DEMs/CA/CA_MTR_STO_dems/CA_MTR_STO_dems/CA_MTR3_GCS_5m_NAVD88m.img"
-min_year = 2009
-max_year = 2011
-hydroflattening_value = -1
+in_raster_path = "D:/LIDAR DEMs/NOAA_OCM_SLR_Inundation_DEMs/GA/GA_dems/GA_dems/GA_CHS_GCS_5m_NAVD88m.img"
 
+min_year = 2009
+max_year = 2010
+hydroflattening_value = -0.914402
 
 # set up outpaths
 in_raster_name = in_raster_path.split("/")[-1]
 
 # Cut out other unnecessary pieces
-stringsToCutOut = ["_GCS", "_5m", "_10m", "_3m", "_NAVDm", "_NAVD88m", "_dist", "_Topobathy_DEM", "JH", "_5ft", "_m", "_2m"]
+stringsToCutOut = ["_GCS", "_5m", "_10m", "_3m", "_NAVDm", "_NAVD88m", "_dist", "_Topobathy_DEM", "JH", "_5ft", "_m", "_2m", "_DEM2013"]
 
 out_raster_name = in_raster_name
 
@@ -82,7 +83,12 @@ def mhhws_prop(in_dem,
     arcpy.env.mask = maskLayer
 
     # Simplify raster so that anything below
-    tempRast1 = arcpy.sa.Con((Raster(in_dem) > -99) & (Raster(in_dem) != float(hydroflattening_value)), Raster(in_dem))
+    if np.isnan(hydroflattening_value):
+        tempRast1 = arcpy.sa.Con((Raster(in_dem) > -99) & (Raster(in_dem) != float(-0.305000)),
+                             Raster(in_dem))
+    else:
+        tempRast1 = arcpy.sa.Con((Raster(in_dem) > -99) & (Raster(in_dem) != float(hydroflattening_value)) & (Raster(in_dem) != float(-0.305000)),
+                                 Raster(in_dem))
     tempRast2 = arcpy.sa.Con(IsNull(wetland_layer), tempRast1, (tempRast1 - float(wetland_offset)))
 
     zRast = (mhhw_layer + mhhws_layer - tempRast2) / rmse_layer # water surface - elevation surface / rmse
