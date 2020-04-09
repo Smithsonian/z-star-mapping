@@ -1,0 +1,3 @@
+demName,demPath,hydroflatteningValue,surveyYearMin,surveyYearMax
+DC_GCS_3m_NAVDm,D:/LIDAR DEMs/NOAA_OCM_SLR_Inundation_DEMs_NEW_170424/DC_dem/DC_GCS_3m_NAVDm.img,-9999,2014,2014
+steward_dem,F:/LibertyCoLidarDEM/LiDAR/2006_dem_LAS_files/FtStewart2003/stewart_dem,-9999,2003,2003

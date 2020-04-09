@@ -23,20 +23,20 @@ import numpy as np
 deleteHighRes = True
 
 arcpy.env.scratchWorkspace = "in_memory"
-tempWritePath = "D:/temp/ArcScratch"
+tempWritePath = "F:/temp/ArcScratch"
 tempGDB = tempWritePath + "/temp.gdb"
 
 # set up TEMP workspaces
-rasterStorage = "D:/temp/ArcScratch/local_rast_wspace"
-out_fishnet_path = "D:/temp/ArcScratch/fishnets/tempFishnet.shp"
-out_raster_folder = "D:/z-star-spatial-data/derivative-maps/pMHHWS_V2p0/"
+rasterStorage = "F:/temp/ArcScratch/local_rast_wspace"
+out_fishnet_path = "F:/temp/ArcScratch/fishnets/tempFishnet.shp"
+out_raster_folder = "F:/z-star-spatial-data/derivative-maps/pMHHWS_V2p0/"
 
 # change this
-in_raster_path = "D:/LIDAR DEMs/NOAA_OCM_SLR_Inundation_DEMs/GA/GA_dems/GA_dems/GA_CHS_GCS_5m_NAVD88m.img"
+in_raster_path = "D:/LIDAR DEMs/NGOM Topobathymetry/Northern_Gulf_of_Mexico_Topobathy_DEM_30m.tif"
 
-min_year = 2009
-max_year = 2010
-hydroflattening_value = -0.914402
+min_year = 1888
+max_year = 2013
+hydroflattening_value = -9999
 
 # set up outpaths
 in_raster_name = in_raster_path.split("/")[-1]
@@ -70,12 +70,12 @@ z2p = np.vectorize(z2p)
 
 # function to calculate prob. below MHHWS based on input surface and uncertainty layers + LiDAR bias and uncertainty
 def mhhws_prop(in_dem,
-        rmse_layer = Raster("D:/z-star-spatial-data/input-layers/datum-layers/MHHWS_NAVD_propegated_uncertainty_300m_19705.img"),
-        mhhw_layer = Raster("D:/z-star-spatial-data/input-layers/datum-layers/MHHW_NAVD_300m_190531.img"),
-        mhhws_layer = Raster("D:/z-star-spatial-data/input-layers/datum-layers/MHHWS_MHHW_300m_190705.img"),
-        wetland_layer = Raster("D:/z-star-spatial-data/input-layers/CCAPallWetlands2010.tif"),
+        rmse_layer = Raster("F:/z-star-spatial-data/input-layers/datum-layers/MHHWS_NAVD_propegated_uncertainty_300m_19705.img"),
+        mhhw_layer = Raster("F:/z-star-spatial-data/input-layers/datum-layers/MHHW_NAVD_300m_190531.img"),
+        mhhws_layer = Raster("F:/z-star-spatial-data/input-layers/datum-layers/MHHWS_MHHW_300m_190705.img"),
+        wetland_layer = Raster("F:/z-star-spatial-data/input-layers/CCAPallWetlands2010.tif"),
         wetland_offset = 0.173,
-        maskLayer = Raster("D:/z-star-spatial-data/input-layers/AOI/noWater2006And2010.img")):
+        maskLayer = Raster("F:/z-star-spatial-data/input-layers/AOI/noWater2006And2010.img")):
 
     # set env
     arcpy.env.outputCoordinateSystem = Raster(in_dem).spatialReference
@@ -114,7 +114,7 @@ def mhhws_prop(in_dem,
 
     return(OutTemp)
 
-def create_fishnet(in_raster_path, out_fc_path="D:/temp/ArcScratch/fishnets/tempFishnet.shp", blockSize=2500):
+def create_fishnet(in_raster_path, out_fc_path="F:/temp/ArcScratch/fishnets/tempFishnet.shp", blockSize=2500):
     # create raster obj from in path
     ras1 = arcpy.Raster(in_raster_path)
     arcpy.env.outputCoordinateSystem = ras1.spatialReference
@@ -226,20 +226,20 @@ if __name__ == "__main__": # If this is the main file run this last. If this fil
     print("   Creating Mosaic dataset...")
     arcpy.CreateMosaicDataset_management(tempWritePath + "/temp.gdb", "tempMosaic", Raster(in_raster_path).spatialReference)
     # add files from temp rast workspace
-    arcpy.management.AddRastersToMosaicDataset("D:/temp/ArcScratch/temp.gdb/tempMosaic", "Raster Dataset", rasterStorage)
+    arcpy.management.AddRastersToMosaicDataset("F:/temp/ArcScratch/temp.gdb/tempMosaic", "Raster Dataset", rasterStorage)
     # Calculate Statistics
     print("   Calculating statistics...")
-    arcpy.management.CalculateStatistics("D:/temp/ArcScratch/temp.gdb/tempMosaic", x_skip_factor=10, y_skip_factor=10)
+    arcpy.management.CalculateStatistics("F:/temp/ArcScratch/temp.gdb/tempMosaic", x_skip_factor=10, y_skip_factor=10)
     # export mosaic to raster dataset
-    arcpy.management.DefineMosaicDatasetNoData("D:/temp/ArcScratch/temp.gdb/tempMosaic", 1, "BAND_1 0")
+    arcpy.management.DefineMosaicDatasetNoData("F:/temp/ArcScratch/temp.gdb/tempMosaic", 1, "BAND_1 0")
 
     # writing to mosaic to temp drive
     print("   Writing mosaic to temp drive...")
-    arcpy.CopyRaster_management("D:/temp/ArcScratch/temp.gdb/tempMosaic", mid_raster_path)
+    arcpy.CopyRaster_management("F:/temp/ArcScratch/temp.gdb/tempMosaic", mid_raster_path)
 
     # set up environments for coarser resolution resampling
-    arcpy.env.snapRaster = Raster("D:/z-star-spatial-data/input-layers/AOI/noWater2006And2010.img")
-    arcpy.env.outputCoordinateSystem = Raster("D:/z-star-spatial-data/input-layers/AOI/noWater2006And2010.img").spatialReference
+    arcpy.env.snapRaster = Raster("F:/z-star-spatial-data/input-layers/AOI/noWater2006And2010.img")
+    arcpy.env.outputCoordinateSystem = Raster("F:/z-star-spatial-data/input-layers/AOI/noWater2006And2010.img").spatialReference
     print("   Resampling...")
 
     resampledTemp = "in_memory/resampledTemp"
@@ -264,7 +264,7 @@ if __name__ == "__main__": # If this is the main file run this last. If this fil
     logger.info("Time taken in main in second(s) is: {}".format(str(time_end-time_start)))
 
     # delete blocks
-    dirPath = r'D:/temp/ArcScratch/local_rast_wspace'
+    dirPath = r'F:/temp/ArcScratch/local_rast_wspace'
     fileList = os.listdir(dirPath)
     for fileName in fileList:
         os.remove(dirPath+"/"+fileName)

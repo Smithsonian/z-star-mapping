@@ -11,12 +11,12 @@ arcpy.CheckOutExtension('Spatial')
 import arcpy.sa
 import os
 
-arcpy.env.scratchWorkspace = "in_memory"
+arcpy.env.scratchWorkspace = "D:/temp/ArcScratch"
 tempWritePath = "D:/temp/ArcScratch"
 tempGDB = tempWritePath + "/temp.gdb"
 arcpy.env.overwriteOutput = True
 
-stringsToCutOut = ["_GCS", "_5m", "_10m", "_3m", "_NAVDm", "_NAVD88m", "_dist", "_Topobathy_DEM", "JH", "_5ft", "_m", "_2m"]
+stringsToCutOut = ["_GCS", "_5m", "_10m", "_3m", "_NAVDm", "_NAVD88m", "_dist", "_Topobathy_DEM", "JH", "_5ft", "_m", "_2m", "_30m"]
 
 inputRasters = ["D:/LIDAR DEMs/NOAA_OCM_SLR_Inundation_DEMs/CA/CA_ChannelIslands_dems/CA_ChannelIslands_GCS_5m_NAVDm.img",
                 "D:/LIDAR DEMs/NOAA_OCM_SLR_Inundation_DEMs/CA/CA_EKA_dems/CA_EKA1_GCS_5m_NAVD88m.img",
@@ -68,7 +68,7 @@ inputRasters = ["D:/LIDAR DEMs/NOAA_OCM_SLR_Inundation_DEMs/CA/CA_ChannelIslands
                 "D:/LIDAR DEMs/NOAA_OCM_SLR_Inundation_DEMs_NEW_170424/VA_Northern_dem/VA_Northern_GCS_3m_NAVDm.img",
                 "D:/LIDAR DEMs/NOAA_OCM_SLR_Inundation_DEMs_NEW_170424/VA_Southern_dem/VA_Southern_GCS_3m_NAVDm.img",
                 "D:/LIDAR DEMs/NOAA_OCM_SLR_Inundation_DEMs_NEW_170424/SC_Horry_dem/SC_Horry_GCS_3m_NAVDm.img",
-                "D:/LIDAR DEMs/NGOM Topobathymetry/Northern_Gulf_of_Mexico_Topobathy_DEM.tif",
+                "D:/LIDAR DEMs/NGOM Topobathymetry/Northern_Gulf_of_Mexico_Topobathy_DEM_30m.tif",
                 "D:/LIDAR DEMs/SJ_Delta/dem_bay_delta_10m_v3_20121109_2/dem_bay_delta_10m_2JH.tif",
                 "D:/LIDAR DEMs/SJ_Delta/dem_bay_delta_10m_v3_20121109_4/dem_bay_delta_10m_4JH.tif",
                 "D:/LIDAR DEMs/MD_state/MD_highres/Harford_DEM_2013_1.5m/harford_5ft",
@@ -80,18 +80,20 @@ inputRasters = ["D:/LIDAR DEMs/NOAA_OCM_SLR_Inundation_DEMs/CA/CA_ChannelIslands
                 ]
 
 def zStarWithUncertainty(zLayer,
-                         mslLayer = "D:/z-star-spatial-data/input-layers/datum-layers/MSL_NAVD_300m_190531.img",
-                         mslSeLayer = "D:/z-star-spatial-data/input-layers/datum-layers/MSL_NAVD_propegated_uncertainty_300m_190603.img",
-                         mhwLayer = "D:/z-star-spatial-data/input-layers/datum-layers/MHW_NAVD_300m_190531.img",
-                         mhwSeLayer = "D:/z-star-spatial-data/input-layers/datum-layers/MHW_NAVD_propegated_uncertainty_300m_190603.img",
+                         mslLayer = "F:/z-star-spatial-data/input-layers/datum-layers/MSL_NAVD_300m_190531.img",
+                         mslSeLayer = "F:/z-star-spatial-data/input-layers/datum-layers/MSL_NAVD_propegated_uncertainty_300m_190603.img",
+                         mhwLayer = "F:/z-star-spatial-data/input-layers/datum-layers/MHW_NAVD_300m_190531.img",
+                         mhwSeLayer = "F:/z-star-spatial-data/input-layers/datum-layers/MHW_NAVD_propegated_uncertainty_300m_190829.img",
                          corMhwMsl = 0.873,
                          wetlandDemBias = 0.173, wetlandDemRMSE = 0.233,
                          hydroFlatteningValue = -1,
                          naValue = -9999,
-                         outputPath = "D:/z-star-spatial-data/derivative-maps/national-scale",
-                         wetlandLayer = "D:/z-star-spatial-data/input-layers/CCAPallWetlands2010.tif",
-                         maskLayer = "D:/z-star-spatial-data/input-layers/zStarAoiMask2_190612.tif",
+                         outputPath = "F:/z-star-spatial-data/derivative-maps/zStar/national-scale",
+                         wetlandLayer = "F:/z-star-spatial-data/input-layers/CCAPallWetlands2010.tif",
+                         maskLayer = "F:/z-star-spatial-data/input-layers/AOI/noWater2006And2010.img",
                          filetag = "",
+                         min_year = "",
+                         max_year = "",
                          mapPartialDerivatives = False
                          ):
 
@@ -108,6 +110,11 @@ def zStarWithUncertainty(zLayer,
 
     for ii in stringsToCutOut:
         out_raster_name = out_raster_name.replace(ii, "")
+
+    if min_year == max_year:
+    out_raster_name = "pMHHWS" + "_" + str(min_year) + "_"  + out_raster_name
+else:
+    out_raster_name = "pMHHWS" + "_"  + str(min_year) + "_" + str(max_year) + "_"  + out_raster_name
 
     print("Running " + out_raster_name)
 
@@ -239,5 +246,6 @@ def zStarWithUncertainty(zLayer,
 #zStarWithUncertainty(inputRasters[11],  filetag="_MHW", hydroFlatteningValue=0)
 #zStarWithUncertainty(inputRasters[12],  filetag="_MHW", hydroFlatteningValue=0)
 #zStarWithUncertainty(inputRasters[13],  filetag="_MHW", hydroFlatteningValue=-0.304801)
+#zStarWithUncertainty(inputRasters[28],  filetag="_MHW", hydroFlatteningValue=-0.5, mapPartialDerivatives=True)
+# zStarWithUncertainty(inputRasters[57],  filetag="_MHW", hydroFlatteningValue=0, mapPartialDerivatives=True)
 
-zStarWithUncertainty(inputRasters[28],  filetag="_MHW", hydroFlatteningValue=-0.5, mapPartialDerivatives=True)

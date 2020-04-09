@@ -1,12 +1,12 @@
 Archive of ArcPro commands
 
-output_raster = arcpy.sa.RasterCalculator('SquareRoot(Square("datum_error_m_IDW_power3_300m_190531.img") + Square("MHHW_NAVD_se_of_prediction_300m_190531.img")) '); output_raster.save(r"D:\z-star-spatial-data\input-layers\datum-layers\MHHW_NAVD_propegated_uncertainty_300m_190603.img")
-
-output_raster = arcpy.sa.RasterCalculator('SquareRoot(Square("datum_error_m_IDW_power3_300m_190531.img") + Square("MHW_NAVD_300m_190531.img")) '); output_raster.save(r"D:\z-star-spatial-data\input-layers\datum-layers\MHW_NAVD_propegated_uncertainty_300m_190603.img")
-
-output_raster = arcpy.sa.RasterCalculator('SquareRoot(Square("datum_error_m_IDW_power3_300m_190531.img") + Square("MSL_NAVD_se_of_prediction_300m_190531.img")) '); output_raster.save(r"D:\z-star-spatial-data\input-layers\datum-layers\MSL_NAVD_propegated_uncertainty_300m_190603.img")
+Inverse distance weighting for NOAA datum errors
 
 arcpy.ga.IDW("NOAA_datums_NAVD88", "error_in_m", None, r"D:\z-star-spatial-data\input-layers\datum-layers\datum_error_m_IDW_power3_300m_190531.img", 300, 3, "NBRTYPE=Standard S_MAJOR=15.649911994222 S_MINOR=15.649911994222 ANGLE=0 NBR_MAX=15 NBR_MIN=10 SECTOR_TYPE=ONE_SECTOR", None)
+
+
+
+EBK for datum transformations
 
 arcpy.ga.EmpiricalBayesianKriging("NOAA_datums_NAVD88", "mhhw", None, r"D:\z-star-spatial-data\input-layers\datum-layers\MHHW_NAVD_se_of_prediction_300m_190531.img", 300, "NONE", 100, 1, 100, "NBRTYPE=StandardCircular RADIUS=15 ANGLE=0 NBR_MAX=15 NBR_MIN=10 SECTOR_TYPE=ONE_SECTOR", "PREDICTION_STANDARD_ERROR", 0.5, "EXCEED", None, "POWER")
 
@@ -19,3 +19,55 @@ arcpy.ga.EmpiricalBayesianKriging("NOAA_datums_NAVD88", "mhw", None, r"D:\z-star
 arcpy.ga.EmpiricalBayesianKriging("NOAA_datums_NAVD88", "msl", None, r"D:\z-star-spatial-data\input-layers\datum-layers\MSL_NAVD_se_of_prediction_300m_190531.img", 300, "NONE", 100, 1, 100, "NBRTYPE=StandardCircular RADIUS=15 ANGLE=0 NBR_MAX=15 NBR_MIN=10 SECTOR_TYPE=ONE_SECTOR", "PREDICTION_STANDARD_ERROR", 0.5, "EXCEED", None, "POWER")
 
 arcpy.ga.EmpiricalBayesianKriging("NOAA_datums_NAVD88", "msl", None, r"D:\z-star-spatial-data\input-layers\datum-layers\MSL_NAVD_300m_190531.img", 300, "NONE", 100, 1, 100, "NBRTYPE=StandardCircular RADIUS=15 ANGLE=0 NBR_MAX=15 NBR_MIN=10 SECTOR_TYPE=ONE_SECTOR", "PREDICTION", 0.5, "EXCEED", None, "POWER")
+
+
+
+Propegated uncertainty in MHHW NAVD transformation
+
+output_raster = arcpy.sa.RasterCalculator('SquareRoot(Square("datum_error_m_IDW_power3_300m_190531.img") + Square("MHHW_NAVD_se_of_prediction_300m_190531.img")) '); output_raster.save(r"D:\z-star-spatial-data\input-layers\datum-layers\MHHW_NAVD_propegated_uncertainty_300m_190603.img")
+
+
+
+Propegated uncertainty in MHW NAVD transformation
+
+output_raster = arcpy.sa.RasterCalculator('SquareRoot(Square("datum_error_m_IDW_power3_300m_190531.img") + Square("MHW_NAVD_300m_190531.img")) '); output_raster.save(r"D:\z-star-spatial-data\input-layers\datum-layers\MHW_NAVD_propegated_uncertainty_300m_190603.img")
+
+
+Correction:
+
+output_raster = arcpy.sa.RasterCalculator(' SquareRoot( Square("datum_error_m_IDW_power3_300m_190531.img") +  Square("MHW_NAVD_se_of_prediction_300m_190531.img"))'); output_raster.save(r"F:\z-star-spatial-data\input-layers\datum-layers\MHW_NAVD_propegated_uncertainty_300m_190829.img")
+
+
+Propegated uncertainty in MSL to NAVD transformation
+
+output_raster = arcpy.sa.RasterCalculator('SquareRoot(Square("datum_error_m_IDW_power3_300m_190531.img") + Square("MSL_NAVD_se_of_prediction_300m_190531.img")) '); output_raster.save(r"D:\z-star-spatial-data\input-layers\datum-layers\MSL_NAVD_propegated_uncertainty_300m_190603.img")
+
+
+Creating an area of interst excluding water and aquatic beds 
+
+out_raster = arcpy.sa.Con("CCAP2006to2010_wTab.tif", 1, None, "X2010_Clas <> 'Water' And X2010_Clas <> 'Palustrine Aquatic Bed' And X2010_Clas <> 'Estuarine Aquatic Bed' And Value <> 0"); out_raster.save(r"D:\z-star-spatial-data\input-layers\AOI\noWater2010.img")
+
+out_raster = arcpy.sa.Con("CCAP2006to2010_wTab.tif", 1, None, "X2006_Clas <> 'Water' And X2006_Clas <> 'Palustrine Aquatic Bed' And X2006_Clas <> 'Estuarine Aquatic Bed' And Value <> 0"); out_raster.save(r"D:\z-star-spatial-data\input-layers\AOI\noWater2006.img")
+
+output_raster = arcpy.sa.RasterCalculator('"noWater2006.img" + "noWater2010.img"'); output_raster.save(r"D:\z-star-spatial-data\input-layers\AOI\noWater2006And2010.img")
+
+
+
+EBK for MHHWS to MHHW transformation
+
+arcpy.ga.EmpiricalBayesianKriging("Holmquist2018_MHHWS_offsets", "mhhws_offs", None, r"D:\z-star-spatial-data\input-layers\datum-layers\MHHWS_MHHW_300m_190531.img", 300, "NONE", 100, 1, 100, "NBRTYPE=StandardCircular RADIUS=15 ANGLE=0 NBR_MAX=15 NBR_MIN=10 SECTOR_TYPE=ONE_SECTOR", "PREDICTION", 0.5, "EXCEED", None, "POWER")
+
+
+
+Propegated uncertainty for MHHWS to MHHW transformation
+
+arcpy.ga.EmpiricalBayesianKriging("Holmquist2018_MHHWS_offsets", "mhhws_offs", None, r"D:\z-star-spatial-data\input-layers\datum-layers\MHHWS_MHHW_seOfPrediction_300m_190705.img", 300, "NONE", 100, 1, 100, "NBRTYPE=StandardCircular RADIUS=15 ANGLE=0 NBR_MAX=15 NBR_MIN=10 SECTOR_TYPE=ONE_SECTOR", "PREDICTION_STANDARD_ERROR", 0.5, "EXCEED", None, "POWER")
+
+arcpy.ga.IDW("Holmquist2018_MHHWS_offsets", "mhhws_se", None, r"D:\z-star-spatial-data\input-layers\datum-layers\mhhws_datum_error_m_IDW_power3_300m_190705.img", 300, 3, "NBRTYPE=Standard S_MAJOR=15.649911994222 S_MINOR=15.649911994222 ANGLE=0 NBR_MAX=15 NBR_MIN=10 SECTOR_TYPE=ONE_SECTOR", None)
+
+output_raster = arcpy.sa.RasterCalculator('SquareRoot(Square("MHHWS_MHHW_seOfPrediction_300m_190705.img") + Square("mhhws_datum_error_m_IDW_power3_300m_190705.img"))'); output_raster.save(r"D:\z-star-spatial-data\input-layers\datum-layers\MHHWS_MHHW_propegated_uncertainty_300m_190603.img")
+
+
+Propegated uncertainty for MHHWS to NAVD88 transformation
+
+output_raster = arcpy.sa.RasterCalculator('SquareRoot(Square(0.233) + Square("MHHWS_MHHW_propegated_uncertainty_300m_190603.img") + Square("MHHW_NAVD_propegated_uncertainty_300m_190603.img") + (2 * 0.716 * "MHHWS_MHHW_propegated_uncertainty_300m_190603.img" * "MHHW_NAVD_propegated_uncertainty_300m_190603.img"))'); output_raster.save(r"D:\z-star-spatial-data\input-layers\datum-layers\MHHWS_NAVD_propegated_uncertainty_300m_19705.img")
