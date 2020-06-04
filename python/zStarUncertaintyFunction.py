@@ -247,5 +247,7 @@ else:
 #zStarWithUncertainty(inputRasters[12],  filetag="_MHW", hydroFlatteningValue=0)
 #zStarWithUncertainty(inputRasters[13],  filetag="_MHW", hydroFlatteningValue=-0.304801)
 #zStarWithUncertainty(inputRasters[28],  filetag="_MHW", hydroFlatteningValue=-0.5, mapPartialDerivatives=True)
-# zStarWithUncertainty(inputRasters[57],  filetag="_MHW", hydroFlatteningValue=0, mapPartialDerivatives=True)
+#zStarWithUncertainty(inputRasters[57],  filetag="_MHW", hydroFlatteningValue=0, mapPartialDerivatives=True)
+zStarWithUncertainty(inputRasters[26],  filetag="_MHW", hydroFlatteningValue=0, mapPartialDerivatives=True)
+
 
