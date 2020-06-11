@@ -18,19 +18,24 @@ lyr= "lyr"
 poly = "in_memory/temp"
 
 # First establish a directory where all of the large geographic data files are held
-geo_directory = "F:/z-star-spatial-data/derivative-maps/zStar/"
+geo_directory = ""
 
 # Huc8 input files
-huc8 = geo_directory + "HUC8_Tidal_170404.shp"
+huc8 = geo_directory + "F:/z-star-spatial-data/derivative-maps/zStar/HUC8_Tidal_170404.shp"
 
 # Create a list of input file names
-input_names = ["zStarUncertainty_30m_maskedByCcapEEM2010_20427.tif",
-               "zStar_30m_maskedByCcapEEM2010_200707.tif"
+input_names = ["F:/z-star-spatial-data/derivative-maps/zStar/zStarUncertainty_30m_maskedByCcapEEM2010_20427.tif",
+               "F:/z-star-spatial-data/derivative-maps/zStar/zStar_30m_maskedByCcapEEM2010_200707.tif",
+               "F:/z-star-spatial-data/input-layers/datum-layers/MHW_MSL_30m_EEM_200604.img",
+               "F:/z-star-spatial-data/input-layers/datum-layers/RSLR_1983to2001_30m_EEM_200604.tif"
                ]
 
 # Create a list of output files names
 output_filepaths = ["F:/z-star-spatial-data/temp/z-star-uncertainty",
-                    "F:/z-star-spatial-data/temp/z-star"]
+                    "F:/z-star-spatial-data/temp/z-star",
+                    "F:/z-star-spatial-data/temp/MHW_MSL",
+                    "F:/z-star-spatial-data/temp/RSLR"
+                    ]
 
 # Iterate through the HUC8
 # set up export tags
