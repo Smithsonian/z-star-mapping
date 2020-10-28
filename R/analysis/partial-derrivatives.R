@@ -3,7 +3,7 @@
 
 library(Deriv)
 
-zstar <- function(E,MHW,MSL) { (MHW-E)/(MHW-MSL) }
+zstar <- function(E,MHW,MSL) { (E-MSL)/(MHW-MSL) }
 
 dfdE <- Deriv(zstar, "E")
 

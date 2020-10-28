@@ -8,6 +8,7 @@ library(sf)
 library(rgdal)
 library(gridExtra)
 library(tmaptools)
+library(MuMIn)
 
 ## Set up stuff for whole map #######
 
@@ -58,6 +59,14 @@ coasts_in_color_order <- rbind(pacific, gulf, atlantic) %>%
   # Order them in integer order
   arrange(int_position)
 
+huc8_info <- data.frame(Abbrev = coasts_in_color_order$Abbrev,
+                        Name = coasts_in_color_order$Name,
+                        States = coasts_in_color_order$States,
+                        Coast = coasts_in_color_order$Coast,
+                        INSIDE_X = coasts_in_color_order$INSIDE_X,
+                        INSIDE_Y = coasts_in_color_order$INSIDE_Y,
+                        int_position = coasts_in_color_order$int_position)
+
 # Look at the color brewer pallates
 display.brewer.all()
 
@@ -97,12 +106,39 @@ center_map_figure <- ggplot(data = coasts_in_color_order) +
 
 hist(z_star$median)
 
+z_star_sum_stats <- z_star %>% 
+  group_by() %>%
+  summarise(median_median = median(median), 
+            median_Q25 = quantile(median, 0.25),
+            median_Q75 = quantile(median, 0.75),
+            median_upper_outlier = median_Q75 + 3*(median_Q75-median_Q25),
+            median_lower_outler = median_Q25 - 3*(median_Q75-median_Q25),
+            median_min = min(median),
+            median_max = max(median),
+            median_Q975 = median(Q975),
+            median_Q75 = median(Q75),
+            median_Q25 = median(Q25),
+            median_Q025 = median(Q025)
+  ) 
+
+z_star_sum_stats_view <- huc8_info %>% 
+  left_join(z_star) %>%
+  arrange(-n) %>% 
+  mutate(pct_of_all_data = n / sum(z_star$n) * 100)
+
+View(z_star_sum_stats_view %>% arrange(int_position))  
+
+write_csv(z_star_sum_stats_view %>% arrange(int_position),
+          "tables/z-star-huc8-sum_stats.csv")
+
+nrow(z_star %>% filter(median >= 1)) / nrow(z_star)
+
 z_star_outlier_analysis <- z_star %>% 
   group_by() %>%
-  mutate(Q25 = quantile(median, 0.25),
-         Q75 = quantile(median, 0.75),
-         upper_outlier = Q75 + 3*(Q75-Q25),
-         lower_outler = Q25 - 3*(Q75-Q25),
+  mutate(median_Q25 = quantile(median, 0.25),
+         median_Q75 = quantile(median, 0.75),
+         upper_outlier = median_Q75 + 3*(median_Q75-median_Q25),
+         lower_outler = median_Q25 - 3*(median_Q75-median_Q25),
          outlier = ifelse(median >= lower_outler & median <= upper_outlier, "in range", "outlier"))
 
 big_differences <- z_star_outlier_analysis %>%
@@ -117,15 +153,25 @@ big_differences <- z_star_outlier_analysis %>%
 z_star_outliers <- z_star_outlier_analysis %>% filter(outlier == "outlier") %>% 
   select(Abbrev)
 
-z_star <- z_star %>% filter(!Abbrev %in% z_star_outliers$Abbrev)
-z_star_uncertainty <- z_star_uncertainty %>% filter(!Abbrev %in% z_star_outliers$Abbrev)
+z_star_outlier_view <- z_star_outlier_analysis %>% 
+  filter(outlier == "outlier") %>% 
+  left_join(huc8_info)
+
+write_csv(z_star_outlier_view, "tables/Z-star-HUC8-outliers.csv")
+
+# Outliers were manually reviewed
+outliers_reviewed <- read_csv("tables/Z-star-HUC8-outliers-manually-investigated.csv") %>% 
+  filter(manual_check == "exclude")
+
+z_star <- z_star %>% filter(!Abbrev %in% outliers_reviewed$Abbrev)
+z_star_uncertainty <- z_star_uncertainty %>% filter(!Abbrev %in% outliers_reviewed$Abbrev)
 
 ## Z star uncertainty ############
 
 # Join uncertainty table with shapefile
 graph_zstar_sigma <- coasts_in_color_order %>% 
   left_join(z_star_uncertainty) %>% 
-  filter(!Abbrev %in% z_star_outliers$Abbrev)
+  filter(!Abbrev %in% outliers_reviewed$Abbrev)
 
 # May want to consider removing outlier watersheds
 # Do these watersheds have somehting in common
@@ -463,17 +509,4 @@ allMaps <- arrangeGrob(grobs = allGrobs, layout_matrix = plot_m,
                        padding=unit(0.25, "line"))
 
 ggsave("Z-star-HUC8-3-coast.pdf", allMaps, width = 7.25, height=3.5)                  
-
-{
-  # Spatial Trends
-  
-  lm1 <- lm(median~INSIDE_Y*Coast, data = graph_zstar)
-  summary(lm1)
-  
-  lm2 <- lm(IQR~INSIDE_Y*Coast, data = graph_zstar)
-  summary(lm2)
-  
-  # Load up 
-  
-}
 
