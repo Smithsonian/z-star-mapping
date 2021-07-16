@@ -278,16 +278,23 @@ all_variance_explained <- best_covariate_models %>%
 
 all_variance_explained$test <- factor(all_variance_explained$test, levels = out_names)
 
+all_variance_explained$test2 <- str_replace(all_variance_explained$test, "Z*\\*", "Z*'*' [MHW]* ' ' *")
+levels(all_variance_explained$test2) <- c("Z*'*' [MHW]* ' ' * Median", 
+                                          "Z*'*' [MHW]* ' ' * Variability", 
+                                          "Z*'*' [MHW]* ' ' * Uncertainty")
+
 ggplot(data = all_variance_explained, aes(x=term, y=variance_explained, color = model)) +
   geom_segment(aes(xend = term, yend = 0)) +
   geom_point() +
-  facet_wrap(.~test) +
+  facet_wrap(.~test2, labeller = "label_parsed") +
   ylab("Variance Explained") +
   xlab(element_blank()) +
   theme(legend.position = "none",
         axis.text.x=element_text(angle=45,hjust=1))
 
 ggsave("figures/Modeling Effect sizes.pdf", width = 5, heigh = 3, unit = "in")
+ggsave("figures/Modeling Effect sizes.jpg", width = 5, heigh = 3, unit = "in")
+
 
 # median_real_data_plot
 # IQR_real_data_plot
@@ -296,39 +303,50 @@ ggsave("figures/Modeling Effect sizes.pdf", width = 5, heigh = 3, unit = "in")
 full_modeling_file_plots <- as.data.frame(full_modeling_file)
 
 median_real_data_plot <- ggplot(full_modeling_file_plots, aes(x=mhw_msl, y=median)) +
-  geom_point(aes(color=rslr, pch=Coast), size= 2) +
-  scale_color_gradientn(colours = rainbow(5)) +
-  ylab("Z* Median") +
+  geom_point(aes(pch=Coast), size= 3, fill = 'darkgrey') +
+  ylab(expression(paste("Z*"["MHW"], " Median", sep = ""))) +
+  scale_shape_manual(values=c(21, 22, 23)) +
   xlab(NULL) +
   scale_x_log10() +
+  theme_minimal() +
   theme(legend.position = "top",
         legend.box = "vertical",
         legend.spacing.x = unit(0.1, 'cm'),
-        legend.spacing.y = unit(0.1, 'cm')) 
+        legend.spacing.y = unit(0.1, 'cm'))
+
+(median_real_data_plot)
 
 IQR_real_data_plot <- ggplot(full_modeling_file_plots, aes(x=mhw_msl, y=IQR)) +
-  geom_point(aes(color=rslr, pch=Coast), size = 2) +
-  scale_color_gradientn(colours = rainbow(5)) +
+  geom_point(aes(pch=Coast), size= 3, fill = 'darkgrey') +
+  ylab(expression(paste("Z*"["MHW"], " IQR (log)", sep = ""))) +
+  scale_shape_manual(values=c(21, 22, 23)) +
   scale_x_log10() +
   scale_y_log10() +
   xlab(NULL) +
-  ylab("Z* IQR (log)") +
+  theme_minimal() +
   theme(legend.position = "none") 
 
+(IQR_real_data_plot)
+
 zStarUncertaintyRealData <- ggplot(full_modeling_file_plots, aes(x=mhw_msl, y=zStar_uncertainty)) +
-  geom_point(aes(pch=Coast), size= 2) +
+  geom_point(aes(pch=Coast), size= 3, fill = 'darkgrey') +
+  ylab(expression(paste("Z*"["MHW"], " Uncertainty (log)", sep = ""))) +
+  scale_shape_manual(values=c(21, 22, 23)) +
   xlab("MHW-MSL (log)") +
-  ylab("Z* Uncertainty (log)") +
   scale_y_log10() +
   scale_x_log10() +
+  theme_minimal() +
   theme(legend.position = "none") +
   labs(pch = element_blank())
+
+(zStarUncertaintyRealData)
 
 p <- arrangeGrob(median_real_data_plot, 
              IQR_real_data_plot,
              zStarUncertaintyRealData,
              ncol = 1,
              nrow = 3,
-             heights = c(2,1,1))
+             heights = c(1.5,1,1))
 
 ggsave("figures/Z* HUC8 Regressions.pdf", p, width = 3.54, height = 6, units = "in")
+ggsave("figures/Z* HUC8 Regressions.jpg", p, width = 3.54, height = 6, units = "in")

@@ -180,7 +180,7 @@ graph_zstar_sigma <- coasts_in_color_order %>%
 ggplot(data = graph_zstar_sigma, aes(x=int_position, y=median)) +
   geom_point(pch=16, color = graph_zstar_sigma$man_colors) +
   geom_segment(aes(xend=int_position, yend=0), color = graph_zstar_sigma$man_colors) +
-  ylab(expression(paste("Uncertainty (Z"^"*",")",sep=""))) +
+  ylab(expression(paste("Uncertainty (Z*"["MHW"],")",sep=""))) +
   geom_hline(data=data.frame(datum=c("MHW"), z_star=c(1)), aes(yintercept=z_star), lty=1) +
   # scale_y_log10() +
   theme_dark() +
@@ -222,7 +222,7 @@ gc_uncertainty <- graph_zstar_sigma %>%
 gc_uncertainty_plot <- ggplot(data = gc_uncertainty, aes(x=int_position, y=median)) +
   geom_point(pch=16, color = gc_uncertainty$man_colors) +
   geom_segment(aes(xend=int_position, yend=0), color = gc_uncertainty$man_colors) +
-  ylab(expression(paste("Uncertainty (Z"^"*",")",sep=""))) +
+  ylab(expression(paste("Uncertainty (Z*"["MHW"],")",sep=""))) +
   geom_hline(data=data.frame(datum=c("MHW"), z_star=c(1)), aes(yintercept=z_star), lty=1) +
   # scale_y_log10() +
   theme_dark() +
@@ -277,6 +277,8 @@ allMaps <- arrangeGrob(grobs = allGrobs, layout_matrix = plot_m,
                        padding=unit(0.25, "line"))
 
 ggsave("Z-star-uncertainty-HUC8-3-coast.pdf", allMaps, width = 7.25, height=3.5)                  
+ggsave("Z-star-uncertainty-HUC8-3-coast.jpg", allMaps, width = 7.25, height=3.5)                  
+
 
 ## Z star Distributions ######
 
@@ -309,7 +311,7 @@ ggplot(data = graph_zstar, aes(x=int_position,
                                ymin = lower_wisker,
                                ymax = upper_wisker)) +
   geom_boxplot(color = graph_zstar$man_colors, stat = "identity") +
-  ylab(expression(paste("Z"^"*","",sep=""))) +
+  ylab(expression(paste("Z*"["MHW"]))) +
   geom_hline(data=data.frame(datum=c("MHW", "MSL"), z_star=c(1, 0)), aes(yintercept=z_star, lty=datum)) +
   theme(axis.title.x=element_blank(),
         axis.text.x=element_blank(),
@@ -320,14 +322,14 @@ ggplot(data = graph_zstar, aes(x=INSIDE_Y,
   geom_point(color = graph_zstar$man_colors, aes(shape=Coast)) +
   facet_wrap(.~Coast) +
   xlab("Latitude (dd)") +
-  ylab(expression(paste("median (Z"^"*", ")", sep="")))
+  ylab(expression(paste("median (Z*"["MHW"], ")", sep="")))
 
 ggplot(data = graph_zstar, aes(x=INSIDE_Y, 
                                y=IQR)) +
   geom_point(color = graph_zstar$man_colors, aes(shape=Coast)) +
   facet_wrap(.~Coast) +
   xlab("Latitude (dd)") +
-  ylab(expression(paste("IQR (Z"^"*", ")", sep="")))
+  ylab(expression(paste("IQR (Z*"["MHW"], ")", sep="")))
 
 # Each coast needs it's own variation on this plot
 # With a filtered datasets data set
@@ -346,8 +348,9 @@ wc_zstar_plot <- ggplot(data = wc_zstar, aes(x=int_position,
                                middle = median,
                                ymin = lower_wisker,
                                ymax = upper_wisker)) +
-  geom_boxplot(color = rev(wc_zstar$man_colors), stat = "identity", fill=NA) +
-  ylab(expression(paste("Z"^"*","(Higher | Lower)",sep=""))) +
+  geom_boxplot(color = rev(wc_zstar$man_colors), stat = "identity", fill=NA,
+               mapping = aes(group = int_position)) +
+  ylab(expression(paste("Z*"["MHW"]," (Higher | Lower)",sep=""))) +
   geom_hline(data=data.frame(datum=c("MHW", "MSL"), z_star=c(1, 0)), aes(yintercept=z_star, lty=datum)) +
   theme_dark() +
   theme(axis.title.y=element_blank(),
@@ -384,6 +387,8 @@ wc_both_plots <- arrangeGrob(grobs = list(wc_zstar_plot, wc_huc8), nrow = 1, nco
             padding=unit(0.25, "line"))
 
 ggsave("WC_HUC8_plots.pdf", wc_both_plots, height=5, width=5)
+ggsave("WC_HUC8_plots.jpg", wc_both_plots, height=5, width=5)
+
 
 # Gulf 
 gc_zstar <- graph_zstar %>% 
@@ -395,10 +400,9 @@ gc_zstar_plot <- ggplot(data = gc_zstar, aes(x=int_position,
                                              middle = median,
                                              ymin = lower_wisker,
                                              ymax = upper_wisker)) +
-  geom_boxplot(color = gc_zstar$man_colors, stat = "identity", fill = NA) +
-  ylab(expression(paste("Z"^"*","",sep=""))) +
+  geom_boxplot(color = gc_zstar$man_colors, stat = "identity", fill = NA, mapping = aes(group = int_position)) +
+  ylab(expression(paste("Z*"["MHW"]," (Higher | Lower)",sep=""))) +
   geom_hline(data=data.frame(datum=c("MHW", "MSL"), z_star=c(1, 0)), aes(yintercept=z_star, lty=datum)) +
-  ylab(expression(paste("Z"^"*","(Lower | Higher)",sep=""))) +
   theme_dark() + 
   theme(# axis.title.y=element_blank(),
     axis.title.x=element_blank(),
@@ -433,6 +437,7 @@ gc_both_plots <- arrangeGrob(grobs = list(gc_huc8, gc_zstar_plot), nrow = 2, nco
                              padding=unit(0.25, "line"))
 
 ggsave("GC_HUC8_plots.pdf", gc_both_plots, height=5, width=5)
+ggsave("GC_HUC8_plots.jpg", gc_both_plots, height=5, width=5)
 
 
 # East
@@ -446,22 +451,25 @@ ec_zstar_plot <- ggplot(data = ec_zstar, aes(x=int_position,
                                              middle = median,
                                              ymin = lower_wisker,
                                              ymax = upper_wisker)) +
-  geom_boxplot(color = ec_zstar$man_colors, stat = "identity", fill = NA) +
-  ylab(expression(paste("Z"^"*","(Higher | Lower)",sep=""))) +
+  geom_boxplot(color = ec_zstar$man_colors, stat = "identity", fill = NA,
+               mapping=aes(group = int_position)) +
+  ylab(expression(paste("Z*"["MHW"]," (Higher | Lower)",sep=""))) +
   geom_hline(data=data.frame(datum=c("MHW", "MSL"), z_star=c(1, 0)), aes(yintercept=z_star, lty=datum)) +
   theme_dark() +
   theme(axis.title.y=element_blank(),
         axis.text.y=element_blank(),
         axis.ticks.y=element_blank(),
         # axis.title.x=element_blank(),
-        legend.position = "left") +
-  coord_flip() +
-  scale_y_reverse() +
-  scale_x_reverse() 
+        legend.position = "left")  +
+  coord_flip() + 
+  scale_y_reverse()
+  # scale_x_reverse() 
 
 (ec_zstar_plot)
 
 ec_bb <- st_bbox(ec_zstar)
+
+head(arrange(ec_zstar, -upper_outlier))
 
 ec_huc8 <- ggplot(data = ec_zstar) + 
   geom_sf(data=map.na.sf.aea, color="black", size=0.1, fill="white") +
@@ -484,6 +492,8 @@ ec_both_plots <- arrangeGrob(grobs = list(ec_zstar_plot, ec_huc8), nrow = 1, nco
                              padding=unit(0.25, "line"))
 
 ggsave("EC_HUC8_plots.pdf", ec_both_plots, height=5.5, width=5)
+ggsave("EC_HUC8_plots.jpg", ec_both_plots, height=5.5, width=5)
+
 
 # then we set up a grid plot
 # If we envision 12 quadrats four columns and three rows
