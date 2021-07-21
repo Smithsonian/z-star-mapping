@@ -278,10 +278,10 @@ all_variance_explained <- best_covariate_models %>%
 
 all_variance_explained$test <- factor(all_variance_explained$test, levels = out_names)
 
-all_variance_explained$test2 <- str_replace(all_variance_explained$test, "Z*\\*", "Z*'*' [MHW]* ' ' *")
-levels(all_variance_explained$test2) <- c("Z*'*' [MHW]* ' ' * Median", 
-                                          "Z*'*' [MHW]* ' ' * Variability", 
-                                          "Z*'*' [MHW]* ' ' * Uncertainty")
+all_variance_explained$test2 <- factor(str_replace(all_variance_explained$test, "Z*\\*", "Z*'*' [MHW]* ' ' *"),
+                                       levels = c("Z*'*' [MHW]* ' ' * Median", 
+                                                  "Z*'*' [MHW]* ' ' * Variability", 
+                                                  "Z*'*' [MHW]* ' ' * Uncertainty"))
 
 ggplot(data = all_variance_explained, aes(x=term, y=variance_explained, color = model)) +
   geom_segment(aes(xend = term, yend = 0)) +

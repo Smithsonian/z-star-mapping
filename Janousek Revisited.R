@@ -2,6 +2,9 @@
 library(tidyverse)
 library(maps)
 library(RColorBrewer)
+library(sf)
+library(rnaturalearth)
+library(rnaturalearthdata)
 
 all_data <- read_csv("data/Janoueseck_et_al_2019_plots.csv")
 
@@ -67,7 +70,7 @@ distFig <- ggplot(data=all_data_plot, aes(y=zStar, x=site_id)) +
   ggtitle("B.")
   
 cor_median <- ggplot(site_data_summary_plot, aes(x = tidal_amp, y = median_Zstar)) +
-  geom_point(aes(fill = site_id), show.legend = F, pch = 21, size = 5) +
+  geom_point(aes(fill = site_id), show.legend = F, pch = 21, size = 4) +
   scale_fill_brewer(palette = "Paired") +
   xlab("MHW-MSL (log scale)") +
   scale_x_log10() +
@@ -80,7 +83,7 @@ cor_median <- ggplot(site_data_summary_plot, aes(x = tidal_amp, y = median_Zstar
 cor_median  
   
 cor_IQR <- ggplot(site_data_summary_plot, aes(x = tidal_amp, y = IQR)) +
-  geom_point(aes(fill = site_id), show.legend = F, pch = 21, size = 5) +
+  geom_point(aes(fill = site_id), show.legend = F, pch = 21, size = 4) +
   scale_fill_brewer(palette = "Paired") +
   xlab("MHW-MSL (log scale)") +
   scale_x_log10() +
@@ -103,15 +106,32 @@ sites <- all_data %>%
   summarise(lat = median(latitude),
             long = median(longitude))
 
-world_map <- map_data("world", region = c("usa", "Mexico", "Canada"))
+map.sf <- ne_countries(scale = 'medium', type = 'map_units',
+                       returnclass = 'sf')
 
-mapFig <- ggplot(data = site_data_summary_plot, aes(x = longitude, y = latitude)) +
-  geom_polygon(data = world_map, fill="lightgray", colour = "white", 
-               aes(x = long, y = lat, group = group)) +
+map.na.sf <- map.sf[map.sf$continent == 'North America',]
+
+map.na.sf.aea <- st_transform(map.na.sf, 
+                              crs = "+proj=aea +ellps=WGS84 +lat_1=29.5 +lat_2=45.5 +lon_0=-96 +x_0=0 +y_0=0")
+
+projcrs <- "+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0"
+
+site_data_summary_plot_sf <- st_as_sf(site_data_summary_plot,
+                                           coords = c("longitude", "latitude"),
+                                           crs = projcrs)
+
+site_data_summary_plot_aea <- st_transform(site_data_summary_plot_sf,
+                                                crs = "+proj=aea +ellps=WGS84 +lat_1=29.5 +lat_2=45.5 +lon_0=-96 +x_0=0 +y_0=0")
+
+b <- st_bbox(site_data_summary_plot_aea)
+
+mapFig <- ggplot(data = site_data_summary_plot_aea) +
+  geom_sf(data=map.na.sf.aea, color="black", size=0.1, fill="white") +
+  geom_sf(aes(shape = site_id, fill=site_id), color="black",
+          show.legend = T, pch = 21, size = 4) +
   scale_fill_brewer(palette = "Paired") +
-  geom_point(aes(fill = site_id), show.legend = T, pch = 21, size = 5) +
-  coord_map(xlim = range(site_data_summary_plot$longitude+1,site_data_summary_plot$longitude-1), 
-            ylim = range(site_data_summary_plot$latitude+1,site_data_summary_plot$latitude-1)) +
+  coord_sf(xlim = c(b["xmin"]-20000, b["xmax"]+20000), ylim = c(b["ymin"]-0.5, b["ymax"]+0.5),
+           crs="+proj=aea +ellps=WGS84 +lat_1=29.5 +lat_2=45.5 +lon_0=-96 +x_0=0 +y_0=0") +
   xlab(NULL) +
   ylab(NULL) +
   theme_dark() +
