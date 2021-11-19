@@ -91,11 +91,12 @@ center_map_figure <- ggplot(data = coasts_in_color_order) +
   # Probably want to take off x and y axes text
   theme_dark() +
   theme(axis.title.x=element_blank(),
-        axis.text.x=element_blank(),
-        axis.ticks.x=element_blank(),
-        axis.title.y=element_blank(),
-        axis.text.y=element_blank(),
-        axis.ticks.y=element_blank())
+        # axis.text.x=element_blank(),
+        # axis.ticks.x=element_blank(),
+        axis.title.y=element_blank() #,
+        # axis.text.y=element_blank(),
+        # axis.ticks.y=element_blank()
+        )
 
 # ggsave("center_map.pdf")
 
@@ -202,7 +203,7 @@ wc_uncertainty <- graph_zstar_sigma %>%
 wc_uncertainty_plot <- ggplot(data = wc_uncertainty, aes(x=int_position, y=median)) +
   geom_point(pch=16, color = wc_uncertainty$man_colors) +
   geom_segment(aes(xend=int_position, yend=0), color = wc_uncertainty$man_colors) +
-  ylab(NULL) +
+  ylab(expression(paste("Uncertainty (Z*"["MHW"],")",sep=""))) +
   geom_hline(data=data.frame(datum=c("MHW"), z_star=c(1)), aes(yintercept=z_star), lty=1) +
   # scale_y_log10() +
   theme_dark() +
@@ -242,7 +243,7 @@ ec_uncertainty <- graph_zstar_sigma %>%
 ec_uncertainty_plot <- ggplot(data = ec_uncertainty, aes(x=int_position, y=median)) +
   geom_point(pch=16, color = ec_uncertainty$man_colors) +
   geom_segment(aes(xend=int_position, yend=0), color = ec_uncertainty$man_colors) +
-  ylab(NULL) +
+  ylab(expression(paste("Uncertainty (Z*"["MHW"],")",sep=""))) +
   geom_hline(data=data.frame(datum=c("MHW"), z_star=c(1)), aes(yintercept=z_star), lty=1) +
   # scale_y_log10() +
   theme_dark() +

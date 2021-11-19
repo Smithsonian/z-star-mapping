@@ -5,6 +5,8 @@ library(RColorBrewer)
 library(sf)
 library(rnaturalearth)
 library(rnaturalearthdata)
+# devtools::install_github("https://github.com/yutannihilation/ggsflabel")
+library(ggsflabel)
 
 all_data <- read_csv("data/Janoueseck_et_al_2019_plots.csv")
 
@@ -123,20 +125,30 @@ site_data_summary_plot_sf <- st_as_sf(site_data_summary_plot,
 site_data_summary_plot_aea <- st_transform(site_data_summary_plot_sf,
                                                 crs = "+proj=aea +ellps=WGS84 +lat_1=29.5 +lat_2=45.5 +lon_0=-96 +x_0=0 +y_0=0")
 
+site_data_summary_plot_aea_labs <- site_data_summary_plot_aea %>% 
+  filter(site_id %in% c("Tijuana Estuary", "San Diego Bay"))
+
 b <- st_bbox(site_data_summary_plot_aea)
 
 mapFig <- ggplot(data = site_data_summary_plot_aea) +
   geom_sf(data=map.na.sf.aea, color="black", size=0.1, fill="white") +
-  geom_sf(aes(shape = site_id, fill=site_id), color="black",
-          show.legend = T, pch = 21, size = 4) +
+  geom_sf(aes(fill=site_id), color="black",
+           show.legend = T, pch = 21, size = 4) +
+  geom_sf_label_repel(aes(label = site_id, fill = site_id),
+                      color = 'black',
+                      # box.padding = NA,
+                      point.padding = NA,
+                      show.legend = FALSE,
+                      size = 2,
+                      force = 100) +
   scale_fill_brewer(palette = "Paired") +
-  coord_sf(xlim = c(b["xmin"]-20000, b["xmax"]+20000), ylim = c(b["ymin"]-0.5, b["ymax"]+0.5),
+  coord_sf(xlim = c(b["xmin"]-200000, b["xmax"]+80000), ylim = c(b["ymin"]-0.5, b["ymax"]+0.5),
            crs="+proj=aea +ellps=WGS84 +lat_1=29.5 +lat_2=45.5 +lon_0=-96 +x_0=0 +y_0=0") +
   xlab(NULL) +
   ylab(NULL) +
   theme_dark() +
   theme(legend.title = element_blank(),
-        legend.position = "right",
+        legend.position = "none",
         axis.text.x = element_text(angle=45, hjust=1)) +
   guides(color=guide_legend(ncol=2)) +
   ggtitle("A.") 
